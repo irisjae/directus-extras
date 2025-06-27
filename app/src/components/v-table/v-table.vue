@@ -334,7 +334,7 @@ function updateSort(newSort: Sort) {
 						:sorted-manually="internalSort.by === manualSortKey"
 						:has-click-listener="!disabled && clickable"
 						:height="rowHeight"
-						@click="!disabled && clickable ? $emit('click:row', { item: element, event: $event }) : null"
+						@click="clickable ? $emit('click:row', { item: element, event: $event }) : null"
 						@item-selected="
 							onItemSelected({
 								item: element,

@@ -109,6 +109,8 @@ const title = computed(() => {
 
 	return isNew.value
 		? t('creating_in', { collection: collection.name })
+		: props.disabled
+		? t('viewing_in', { collection: collection.name })
 		: t('editing_in', { collection: collection.name });
 });
 
@@ -541,7 +543,7 @@ function popoverClickOutsideMiddleware(e: Event) {
 		<template #actions>
 			<slot name="actions" />
 
-			<v-button v-tooltip.bottom="getTooltip('save', t('save'))" icon rounded :disabled="!isSavable" @click="save">
+			<v-button v-if="isSavable" v-tooltip.bottom="getTooltip('save', t('save'))" icon rounded @click="save">
 				<v-icon name="check" />
 			</v-button>
 		</template>

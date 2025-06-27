@@ -30,7 +30,9 @@ type UsableItem<T extends Item> = {
 	error: Ref<any>;
 	loading: ComputedRef<boolean>;
 	saving: Ref<boolean>;
+	viewing: Ref<boolean>;
 	refresh: () => void;
+	edit: () => void;
 	save: () => Promise<T>;
 	isNew: ComputedRef<boolean>;
 	remove: () => Promise<void>;
@@ -54,6 +56,7 @@ export function useItem<T extends Item>(
 	const validationErrors = ref<any[]>([]);
 	const loadingItem = ref(false);
 	const saving = ref(false);
+	const viewing = ref(true);
 	const deleting = ref(false);
 	const archiving = ref(false);
 	const edits = ref<Item>({});
@@ -100,7 +103,9 @@ export function useItem<T extends Item>(
 		error,
 		loading,
 		saving,
+		viewing,
 		refresh,
+		edit,
 		save,
 		isNew,
 		remove,
@@ -125,6 +130,10 @@ export function useItem<T extends Item>(
 		} finally {
 			loadingItem.value = false;
 		}
+	}
+
+	function edit() {
+		viewing.value = false;
 	}
 
 	async function save() {
@@ -177,6 +186,7 @@ export function useItem<T extends Item>(
 		} catch (error) {
 			saveErrorHandler(error);
 		} finally {
+			viewing.value = true;
 			saving.value = false;
 		}
 	}
@@ -322,6 +332,7 @@ export function useItem<T extends Item>(
 		} catch (error) {
 			saveErrorHandler(error);
 		} finally {
+			viewing.value = true;
 			saving.value = false;
 		}
 
@@ -476,6 +487,7 @@ export function useItem<T extends Item>(
 		error.value = null;
 		validationErrors.value = [];
 		loadingItem.value = false;
+		viewing.value = true;
 		saving.value = false;
 		deleting.value = false;
 		archiving.value = false;

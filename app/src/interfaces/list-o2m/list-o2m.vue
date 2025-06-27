@@ -487,7 +487,7 @@ function getLinkForItem(item: DisplayItem) {
 						:title="header.value"
 						:collection="relationInfo.relatedCollection.collection"
 						:item="item"
-						:template="`{{${header.value}}}`"
+						:template="`{{${header.text}}}`"
 					/>
 				</template>
 
@@ -545,7 +545,6 @@ function getLinkForItem(item: DisplayItem) {
 						<v-list-item
 							block
 							clickable
-							:disabled="disabled"
 							:dense="totalItemCount > 4"
 							:class="{ deleted: element.$type === 'deleted' }"
 							@click="editItem(element)"

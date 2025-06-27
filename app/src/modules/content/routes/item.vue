@@ -64,6 +64,8 @@ const {
 } = useVersions(collection, isSingleton, primaryKey);
 
 const {
+	viewing,
+	edit,
 	isNew,
 	edits,
 	hasEdits,
@@ -106,7 +108,9 @@ const title = computed(() => {
 			: t('editing_unit', { unit: t(`collection_names_singular.${props.collection}`) });
 	}
 
-	return isNew.value
+	return viewing.value
+		? t('viewing_in', { collection: collectionInfo.value?.name })
+		: isNew.value
 		? t('creating_in', { collection: collectionInfo.value?.name })
 		: t('editing_in', { collection: collectionInfo.value?.name });
 });
@@ -195,6 +199,7 @@ const { updateAllowed: updateVersionsAllowed } = useItemPermissions(
 );
 
 const isFormDisabled = computed(() => {
+	if (viewing.value) return true;
 	if (isNew.value) return false;
 	if (updateAllowed.value) return false;
 	if (currentVersion.value !== null && updateVersionsAllowed.value) return false;
@@ -655,7 +660,18 @@ const shouldShowVersioning = computed(
 			</v-dialog>
 
 			<v-button
-				v-if="currentVersion === null"
+				v-if="currentVersion === null && viewing"
+				rounded
+				icon
+				:tooltip="t('edit_item')"
+				:loading="false"
+				@click="edit"
+			>
+				<v-icon name="edit" />
+			</v-button>
+			
+			<v-button
+				v-else-if="currentVersion === null"
 				rounded
 				icon
 				:tooltip="saveAllowed ? t('save') : t('not_allowed')"
@@ -676,6 +692,7 @@ const shouldShowVersioning = computed(
 					/>
 				</template>
 			</v-button>
+			
 			<v-button
 				v-else
 				rounded
