@@ -16,6 +16,7 @@ import FlowsOverview from './routes/flows/overview.vue';
 import MarketplaceAccount from './routes/marketplace/routes/account/account.vue';
 import MarketplaceExtension from './routes/marketplace/routes/extension/extension.vue';
 import MarketplaceRegistry from './routes/marketplace/routes/registry/registry.vue';
+import NewCustomCollection from './routes/data-model/new-custom-collection.vue';
 import NotFound from './routes/not-found.vue';
 import PoliciesCollection from './routes/policies/collection.vue';
 import PoliciesItem from './routes/policies/item.vue';
@@ -74,6 +75,13 @@ export default defineModule({
 							},
 							components: {
 								add: NewCollection,
+							},
+						},
+						{
+							path: 'custom/+',
+							name: 'settings-add-new-custom',
+							components: {
+								add: NewCustomCollection,
 							},
 						},
 					],

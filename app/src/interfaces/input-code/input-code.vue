@@ -303,6 +303,10 @@ function isInterpolation(value: any) {
 		<v-button v-if="template" v-tooltip.left="t('fill_template')" small icon secondary @click="fillTemplate">
 			<v-icon name="playlist_add" />
 		</v-button>
+
+		<div v-if="$slots.append" class="append">
+			<slot name="append" :disabled="disabled" />
+		</div>
 	</div>
 </template>
 
@@ -336,5 +340,12 @@ function isInterpolation(value: any) {
 		color: var(--theme--primary-accent);
 		transition: none;
 	}
+}
+
+.append {
+	position: absolute;
+	z-index: 2;
+	top: 10px;
+	right: 10px;
 }
 </style>

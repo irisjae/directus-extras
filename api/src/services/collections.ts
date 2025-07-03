@@ -85,132 +85,120 @@ export class CollectionsService {
 				throw new InvalidPayloadError({ reason: `Collection "${payload.collection}" already exists` });
 			}
 
-			// Create the collection/fields in a transaction so it'll be reverted in case of errors or
-			// permission problems. This might not work reliably in MySQL, as it doesn't support DDL in
-			// transactions.
-			await transaction(this.knex, async (trx) => {
-				if (payload.schema) {
-					if ('fields' in payload && !Array.isArray(payload.fields)) {
-						throw new InvalidPayloadError({ reason: `"fields" must be an array` });
-					}
+			const kind = payload.meta?.kind || 'table';
 
-					/**
-					 * Directus heavily relies on the primary key of a collection, so we have to make sure that
-					 * every collection that is created has a primary key. If no primary key field is created
-					 * while making the collection, we default to an auto incremented id named `id`
-					 */
+			switch (kind) {
+				// case 'table':
+				case 'view':
+					await this.knex.schema.raw(`
+                      CREATE VIEW ${payload.collection} AS ${payload.meta?.definition};
+					`);
+					break;
 
-					const injectedPrimaryKeyField: RawField = {
-						field: 'id',
-						type: 'integer',
-						meta: {
-							hidden: true,
-							interface: 'numeric',
-							readonly: true,
-						},
-						schema: {
-							is_primary_key: true,
-							has_auto_increment: true,
-						},
-					};
+				case 'materialized_view':
+					await this.knex.schema.raw(`
+                      CREATE MATERIALIZED VIEW ${payload.collection} AS ${payload.meta?.definition};
+					`);
+					break;
 
-					if (!payload.fields || payload.fields.length === 0) {
-						payload.fields = [injectedPrimaryKeyField];
-					} else if (
-						!payload.fields.some((f) => f.schema?.is_primary_key === true || f.schema?.has_auto_increment === true)
-					) {
-						payload.fields = [injectedPrimaryKeyField, ...payload.fields];
-					}
+				case 'foreign_table':
+					await this.knex.schema.raw(`
+                      CREATE FOREIGN TABLE ${payload.collection} (${payload.meta?.definition});
+					`);
+					break;
 
-					// Ensure that every field meta has the field/collection fields filled correctly
-					payload.fields = payload.fields.map((field) => {
-						if (field.meta) {
-							field.meta = {
-								...field.meta,
-								field: field.field,
-								collection: payload.collection!,
-							};
+				default:
+					// Create the collection/fields in a transaction so it'll be reverted in case of errors or
+					// permission problems. This might not work reliably in MySQL, as it doesn't support DDL in
+					// transactions.
+					await this.knex.transaction(async (trx) => {
+						if (payload.schema) {
+							// Directus heavily relies on the primary key of a collection, so we have to make sure that
+							// every collection that is created has a primary key. If no primary key field is created
+							// while making the collection, we default to an auto incremented id named `id`
+							if (!payload.fields)
+								payload.fields = [
+									{
+										field: 'id',
+										type: 'integer',
+										meta: {
+											hidden: true,
+											interface: 'numeric',
+											readonly: true,
+										},
+										schema: {
+											is_primary_key: true,
+											has_auto_increment: true,
+										},
+									},
+								];
+
+							// Ensure that every field meta has the field/collection fields filled correctly
+							payload.fields = payload.fields.map((field) => {
+								if (field.meta) {
+									field.meta = {
+										...field.meta,
+										field: field.field,
+										collection: payload.collection!,
+									};
+								}
+
+								// Add flag for specific database type overrides
+								const flagToAdd = this.helpers.date.fieldFlagForField(field.type);
+								if (flagToAdd) {
+									addFieldFlag(field, flagToAdd);
+								}
+
+								return field;
+							});
+
+							const fieldsService = new FieldsService({ knex: trx, schema: this.schema });
+
+							await trx.schema.createTable(payload.collection, (table) => {
+								for (const field of payload.fields!) {
+									if (field.type && ALIAS_TYPES.includes(field.type) === false) {
+										fieldsService.addColumnToTable(table, field);
+									}
+								}
+							});
+
+							const fieldItemsService = new ItemsService('directus_fields', {
+								knex: trx,
+								accountability: this.accountability,
+								schema: this.schema,
+							});
+
+							const fieldPayloads = payload
+								.fields!.filter((field) => field.meta)
+								.map((field) => field.meta) as FieldMeta[];
+							await fieldItemsService.createMany(fieldPayloads, {
+								bypassEmitAction: (params) =>
+									opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
+							});
 						}
 
-						// Add flag for specific database type overrides
-						const flagToAdd = this.helpers.date.fieldFlagForField(field.type);
+						if (payload.meta) {
+							const collectionItemsService = new ItemsService('directus_collections', {
+								knex: trx,
+								accountability: this.accountability,
+								schema: this.schema,
+							});
 
-						if (flagToAdd) {
-							addFieldFlag(field, flagToAdd);
-						}
-
-						return field;
-					});
-
-					const fieldsService = new FieldsService({ knex: trx, schema: this.schema });
-
-					await trx.schema.createTable(payload.collection, (table) => {
-						for (const field of payload.fields!) {
-							if (field.type && ALIAS_TYPES.includes(field.type) === false) {
-								fieldsService.addColumnToTable(table, payload.collection, field);
-							}
-						}
-					});
-
-					const fieldItemsService = new ItemsService('directus_fields', {
-						knex: trx,
-						accountability: this.accountability,
-						schema: this.schema,
-					});
-
-					const fieldPayloads = payload.fields!.filter((field) => field.meta).map((field) => field.meta) as FieldMeta[];
-
-					// Sort new fields that does not have any group defined, in ascending order.
-					// Lodash merge is used so that the "sort" can be overridden if defined.
-					let sortedFieldPayloads = fieldPayloads
-						.filter((field) => field?.group === undefined || field?.group === null)
-						.map((field, index) => merge({ sort: index + 1 }, field));
-
-					// Sort remaining new fields with group defined, if any, in ascending order.
-					// sortedFieldPayloads will be less than fieldPayloads if it filtered out any fields with group defined.
-					if (sortedFieldPayloads.length < fieldPayloads.length) {
-						const fieldsWithGroups = groupBy(
-							fieldPayloads.filter((field) => field?.group),
-							(field) => field?.group,
-						);
-
-						// The sort order is restarted from 1 for fields in each group and appended to sortedFieldPayloads.
-						// Lodash merge is used so that the "sort" can be overridden if defined.
-						for (const [_group, fields] of Object.entries(fieldsWithGroups)) {
-							sortedFieldPayloads = sortedFieldPayloads.concat(
-								fields.map((field, index) => merge({ sort: index + 1 }, field)),
+							await collectionItemsService.createOne(
+								{
+									...payload.meta,
+									collection: payload.collection,
+								},
+								{
+									bypassEmitAction: (params) =>
+										opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
+								}
 							);
 						}
-					}
 
-					await fieldItemsService.createMany(sortedFieldPayloads, {
-						bypassEmitAction: (params) =>
-							opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
-						bypassLimits: true,
+						return payload.collection;
 					});
-				}
-
-				if (payload.meta) {
-					const collectionsItemsService = new ItemsService('directus_collections', {
-						knex: trx,
-						accountability: this.accountability,
-						schema: this.schema,
-					});
-
-					await collectionsItemsService.createOne(
-						{
-							...payload.meta,
-							collection: payload.collection,
-						},
-						{
-							bypassEmitAction: (params) =>
-								opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
-						},
-					);
-				}
-
-				return payload.collection;
-			});
+			}
 
 			return payload.collection;
 		} finally {
