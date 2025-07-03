@@ -139,6 +139,30 @@ export default defineInterface({
 						default_value: false,
 					},
 				},
+				{
+					field: 'suffix',
+					name: '$t:interfaces.input.suffix',
+					type: 'string',
+					meta: {
+						width: 'half',
+						interface: 'input',
+					},
+				},
+				{
+					field: 'stripZeroes',
+					name: '$t:interfaces.input.strip_zeroes',
+					type: 'boolean',
+					meta: {
+						width: 'half',
+						interface: 'boolean',
+						options: {
+							label: '$t:interfaces.input.strip_zeroes',
+						},
+					},
+					schema: {
+						default_value: false,
+					},
+				},
 			],
 		};
 

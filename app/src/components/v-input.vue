@@ -59,6 +59,8 @@ interface Props {
 	integer?: boolean;
 	/** If the input should be a float */
 	float?: boolean;
+	
+	stripZeroes?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -83,6 +85,7 @@ const props = withDefaults(defineProps<Props>(), {
 	trim: false,
 	autocomplete: 'off',
 	small: false,
+	stripTrailingZeroes: false,
 });
 
 const emit = defineEmits(['click', 'keydown', 'update:modelValue', 'focus', 'keydown:space', 'keydown:enter']);
@@ -216,6 +219,14 @@ function trimIfEnabled() {
 	}
 }
 
+function stripZeroesIfEnabled(string: String) {
+	if (props.stripZeroes) {
+		return string.replace(/\.0+$/, '');
+	} else {
+		return string;
+	}
+}
+
 function emitValue(event: InputEvent) {
 	let value = (event.target as HTMLInputElement).value;
 
@@ -303,7 +314,7 @@ function stepDown() {
 					:max="max"
 					:step="step"
 					:disabled="disabled"
-					:value="modelValue === undefined || modelValue === null ? '' : String(modelValue)"
+					:value="modelValue === undefined || modelValue === null ? '' : stripZeroesIfEnabled(String(modelValue))"
 					v-on="listeners"
 					@keydown.space="$emit('keydown:space', $event)"
 					@keydown.enter="$emit('keydown:enter', $event)"

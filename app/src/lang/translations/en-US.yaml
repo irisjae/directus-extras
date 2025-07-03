@@ -2022,6 +2022,8 @@ interfaces:
     step_interval: Step Interval
     slug: Slugify
     slug_label: Make entered value URL safe
+    suffix: Suffix
+    strip_zeroes: Strip trailing zeroes
   input-multiline:
     textarea: Textarea
     description: Enter multiline plain-text

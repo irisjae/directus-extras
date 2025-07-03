@@ -33,6 +33,7 @@ type UsableItem<T extends Item> = {
 	viewing: Ref<boolean>;
 	refresh: () => void;
 	edit: () => void;
+	leaveEdit: () => void;
 	save: () => Promise<T>;
 	isNew: ComputedRef<boolean>;
 	remove: () => Promise<void>;
@@ -106,6 +107,7 @@ export function useItem<T extends Item>(
 		viewing,
 		refresh,
 		edit,
+		leaveEdit,
 		save,
 		isNew,
 		remove,
@@ -134,6 +136,9 @@ export function useItem<T extends Item>(
 
 	function edit() {
 		viewing.value = false;
+	}
+	function leaveEdit() {
+		viewing.value = true;
 	}
 
 	async function save() {

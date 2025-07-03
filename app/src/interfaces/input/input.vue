@@ -23,6 +23,8 @@ const props = withDefaults(
 		max?: number;
 		step?: number;
 		direction?: string;
+		suffix?: string;
+		stripTrailingZeroes?: boolean;
 	}>(),
 	{
 		font: 'sans-serif',
@@ -85,6 +87,8 @@ const isFloat = computed(() => ['float', 'decimal'].includes(props.type!));
 		:integer="isInteger"
 		:float="isFloat"
 		:autocomplete="masked ? 'new-password' : 'off'"
+		:suffix="suffix"
+		:stripZeroes="stripZeroes"
 		@update:model-value="$emit('input', $event)"
 	>
 		<template v-if="iconLeft" #prepend><v-icon :name="iconLeft" /></template>

@@ -416,7 +416,7 @@ function getLinkForItem(item: DisplayItem) {
 		{{ t('no_singleton_relations') }}
 	</v-notice>
 	<div v-else class="one-to-many">
-		<div :class="{ bordered: layout === LAYOUTS.TABLE }">
+		<div>
 			<div v-if="layout === LAYOUTS.TABLE" class="actions top" :class="width">
 				<div class="spacer" />
 
@@ -487,7 +487,7 @@ function getLinkForItem(item: DisplayItem) {
 						:title="header.value"
 						:collection="relationInfo.relatedCollection.collection"
 						:item="item"
-						:template="`{{${header.text}}}`"
+						:template="`{{${header.value}}}`"
 					/>
 				</template>
 
@@ -603,10 +603,10 @@ function getLinkForItem(item: DisplayItem) {
 					</template>
 				</template>
 				<template v-else>
-					<v-button v-if="enableCreate && createAllowed" :disabled="disabled" @click="createItem">
+					<v-button v-if="enableCreate && createAllowed && !disabled" @click="createItem">
 						{{ t('create_new') }}
 					</v-button>
-					<v-button v-if="enableSelect && updateAllowed" :disabled="disabled" @click="selectModalActive = true">
+					<v-button v-if="enableSelect && updateAllowed && !disabled" @click="selectModalActive = true">
 						{{ t('add_existing') }}
 					</v-button>
 					<div class="spacer" />
@@ -647,24 +647,22 @@ function getLinkForItem(item: DisplayItem) {
 
 <style lang="scss">
 .one-to-many {
-	.bordered {
-		.render-template {
-			line-height: 1;
-		}
+	.render-template {
+		line-height: 1;
+	}
 
-		.no-last-border {
-			tr.table-row:last-child td {
-				border-bottom: none;
-			}
+	.no-last-border {
+		tr.table-row:last-child td {
+			border-bottom: none;
 		}
+	}
 
-		tr.table-row {
-			.append {
-				position: sticky;
-				right: 0;
-				background: var(--theme--background);
-				border-left: var(--theme--border-width) solid var(--theme--border-color-subdued);
-			}
+	tr.table-row {
+		.append {
+			position: sticky;
+			right: 0;
+			background: var(--theme--background);
+			border-left: var(--theme--border-width) solid var(--theme--border-color-subdued);
 		}
 	}
 }
@@ -672,12 +670,6 @@ function getLinkForItem(item: DisplayItem) {
 
 <style lang="scss" scoped>
 @use '@/styles/mixins';
-
-.bordered {
-	border: var(--theme--border-width) solid var(--theme--form--field--input--border-color);
-	border-radius: var(--theme--border-radius);
-	padding: var(--v-card-padding, 16px);
-}
 
 .v-table .deleted {
 	color: var(--danger-75);

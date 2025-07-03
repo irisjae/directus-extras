@@ -478,7 +478,7 @@ function getLinkForItem(item: DisplayItem) {
 					{{ showingCount }}
 				</div>
 
-				<div v-if="enableSearchFilter && (totalItemCount > 10 || search || searchFilter)" class="search">
+				<div v-if="enableSearchFilter" class="search">
 					<search-input
 						v-model="search"
 						v-model:filter="searchFilter"

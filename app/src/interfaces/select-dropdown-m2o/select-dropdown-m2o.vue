@@ -120,11 +120,14 @@ const edits = computed(() => {
 });
 
 function onPreviewClick() {
-	if (props.disabled) return;
-
 	// Prevent double dialog in case the edit dialog is already open
 	if (editModalActive.value === true) return;
 
+	if (props.disabled) {
+		editModalActive.value = true;
+		return;
+	}
+	
 	if (props.enableSelect) {
 		selectModalActive.value = true;
 		return;
@@ -185,7 +188,7 @@ function getLinkForItem() {
 	<div v-else class="many-to-one">
 		<v-skeleton-loader v-if="loading" type="input" />
 
-		<v-list-item v-else block clickable :disabled @click="onPreviewClick">
+		<v-list-item v-else block clickable @click="onPreviewClick">
 			<div v-if="displayItem" class="preview">
 				<render-template
 					:collection="relationInfo.relatedCollection.collection"

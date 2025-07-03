@@ -66,6 +66,7 @@ const {
 const {
 	viewing,
 	edit,
+	leaveEdit,
 	isNew,
 	edits,
 	hasEdits,
@@ -535,6 +536,19 @@ const shouldShowVersioning = computed(
 			</v-button>
 
 			<v-button
+				v-else-if="!viewing"
+				v-tooltip.bottom="t('back')"
+				class="header-icon"
+				rounded
+				icon
+				secondary
+				exact
+				@click="leaveEdit"
+			>
+				<v-icon name="arrow_back" />
+			</v-button>
+			
+			<v-button
 				v-else
 				v-tooltip.bottom="t('back')"
 				class="header-icon"
@@ -589,7 +603,7 @@ const shouldShowVersioning = computed(
 			</v-button>
 
 			<v-dialog
-				v-if="!isNew && currentVersion === null"
+				v-if="!viewing && !isNew && currentVersion === null"
 				v-model="confirmDelete"
 				:disabled="deleteAllowed === false"
 				@esc="confirmDelete = false"
@@ -766,8 +780,7 @@ const shouldShowVersioning = computed(
 		</template>
 
 		<template #sidebar>
-			<sidebar-detail icon="info" :title="t('information')" close>
-				<div v-md="t('page_help_collections_item')" class="page-description" />
+			<sidebar-detail icon="star" close>
 			</sidebar-detail>
 			<template v-if="isNew === false && actualPrimaryKey">
 				<revisions-drawer-detail
