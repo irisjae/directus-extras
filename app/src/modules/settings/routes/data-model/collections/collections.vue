@@ -168,7 +168,7 @@ async function onSort(updates: Collection[], removeGroup = false) {
 						</template>
 
 						<v-list>
-							<v-list-item clickable @click="createCustomCollection">
+							<v-list-item clickable to="/settings/data-model/custom/+">
 								<v-list-item-icon><v-icon name="add" /></v-list-item-icon>
 								<v-list-item-content>{{ t('create_custom_collection') }}</v-list-item-content>
 							</v-list-item>
@@ -358,12 +358,7 @@ export default defineComponent({
 			onSort,
 			rootCollections,
 			editCollection,
-			createCustomCollection,
 		};
-
-		async function createCustomCollection() {
-			router.push('/settings/data-model/custom/+');
-		}
 
 		async function onSort(updates: Collection[], removeGroup = false) {
 			const updatesWithSortValue = updates.map((collection, index) =>

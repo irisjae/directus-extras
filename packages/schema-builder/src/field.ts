@@ -115,6 +115,17 @@ export class FieldBuilder {
 		};
 	}
 
+	/** Marks the field as the name_field of the collection */
+	name() {
+		assert(this._collection, 'Can only set to name on a collection');
+		assert(this._collection._data.nameField === null, 'Can only set a name field once');
+
+		this._collection._data = {
+			...this._collection._data,
+			nameField: this._data.field,
+		};
+	}
+
 	boolean() {
 		assert(this._data._kind === 'initial', 'Field type was already set');
 

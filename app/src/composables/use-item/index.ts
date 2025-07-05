@@ -57,7 +57,7 @@ export function useItem<T extends Item>(
 	const validationErrors = ref<any[]>([]);
 	const loadingItem = ref(false);
 	const saving = ref(false);
-	const viewing = ref(true);
+	const viewing = ref(primaryKey.value !== '+');
 	const deleting = ref(false);
 	const archiving = ref(false);
 	const edits = ref<Item>({});

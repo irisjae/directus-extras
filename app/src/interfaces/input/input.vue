@@ -24,7 +24,7 @@ const props = withDefaults(
 		step?: number;
 		direction?: string;
 		suffix?: string;
-		stripTrailingZeroes?: boolean;
+		stripZeroes?: boolean;
 	}>(),
 	{
 		font: 'sans-serif',

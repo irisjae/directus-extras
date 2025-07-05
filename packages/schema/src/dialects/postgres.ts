@@ -222,9 +222,11 @@ export default class Postgres implements SchemaInspector {
         )
         SELECT type, table_name, column_name
         FROM summary
-        WHERE rank = 1
+        WHERE column_name = 'id'
       )
       SELECT * FROM tables
+      UNION
+      SELECT * FROM views
       `,
 				this.explodedSchema,
 			),
@@ -323,7 +325,7 @@ export default class Postgres implements SchemaInspector {
 			pg_class rel
 		 WHERE
 			rel.relnamespace IN (${schemaIn})
-			AND rel.relkind = 'r'
+			AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 		 ORDER BY rel.relname
 	  `,
 		);
@@ -355,7 +357,7 @@ export default class Postgres implements SchemaInspector {
 		 WHERE
 			rel.relnamespace IN (${schemaIn})
 			${table ? 'AND rel.relname = ?' : ''}
-			AND rel.relkind = 'r'
+			AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 		 ORDER BY rel.relname
 	  `,
 			bindings,
@@ -379,7 +381,7 @@ export default class Postgres implements SchemaInspector {
 			pg_class rel
 		 WHERE
 			rel.relnamespace IN (${schemaIn})
-			AND rel.relkind = 'r'
+			AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 			AND rel.relname = ?
 		 ORDER BY rel.relname
 	  `,
@@ -412,7 +414,7 @@ export default class Postgres implements SchemaInspector {
 		 WHERE
 			rel.relnamespace IN (${schemaIn})
 			${table ? 'AND rel.relname = ?' : ''}
-			AND rel.relkind = 'r'
+			AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 			AND att.attnum > 0
 			AND NOT att.attisdropped;
 	  `,
@@ -514,7 +516,7 @@ export default class Postgres implements SchemaInspector {
 			  rel.relnamespace IN (${schemaIn})
 			  ${table ? 'AND rel.relname = ?' : ''}
 			  ${column ? 'AND att.attname = ?' : ''}
-			  AND rel.relkind = 'r'
+			  AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 			  AND att.attnum > 0
 			  AND NOT att.attisdropped
 			ORDER BY rel.relname, att.attnum;
@@ -570,7 +572,7 @@ export default class Postgres implements SchemaInspector {
 				is_nullable: col.is_nullable,
 				is_unique: constraintsForColumn.some((constraint) => ['u', 'p'].includes(constraint.type)),
 				is_indexed: !!col.index_name && col.index_name.length > 0,
-				is_primary_key: constraintsForColumn.some((constraint) => constraint.type === 'p'),
+				is_primary_key: constraintsForColumn.some((constraint) => constraint.type === 'p') || col.name === 'id',
 				has_auto_increment: constraintsForColumn.some((constraint) => constraint.has_auto_increment),
 				foreign_key_schema: foreignKeyConstraint?.foreign_key_schema ?? null,
 				foreign_key_table: foreignKeyConstraint?.foreign_key_table ?? null,
@@ -658,7 +660,7 @@ export default class Postgres implements SchemaInspector {
 			rel.relnamespace IN (${schemaIn})
 			AND rel.relname = ?
 			AND att.attname = ?
-			AND rel.relkind = 'r'
+			AND rel.relkind in ('r', 'v', 'm', 'f', 'p')
 			AND att.attnum > 0
 			AND NOT att.attisdropped;
 	  `,

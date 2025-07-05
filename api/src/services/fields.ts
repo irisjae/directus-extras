@@ -736,7 +736,7 @@ export class FieldsService {
 
 				const collectionMetaQuery = trx
 					.queryBuilder()
-					.select('collection', 'archive_field', 'sort_field', 'item_duplication_fields')
+					.select('collection', 'archive_field', 'sort_field', 'name_field', 'item_duplication_fields')
 					.from('directus_collections')
 					.where({ collection });
 

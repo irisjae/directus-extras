@@ -1,3 +1,88 @@
+<script setup lang="ts">
+import api from '@/api';
+import { useDialogRoute } from '@/composables/use-dialog-route';
+import { useCollectionsStore } from '@/stores/collections';
+import { useFieldsStore } from '@/stores/fields';
+import { notify } from '@/utils/notify';
+import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { unexpectedError } from '@/utils/unexpected-error';
+import { AxiosResponse } from 'axios';
+
+const { t } = useI18n();
+
+const router = useRouter();
+
+const collectionsStore = useCollectionsStore();
+const fieldsStore = useFieldsStore();
+
+const isOpen = useDialogRoute();
+
+const currentTab = ref(['collection_setup']);
+
+const collectionName = ref(null);
+const singleton = ref(false);
+const primaryKeyFieldName = ref('id');
+const primaryKeyFieldType = ref<'auto_int' | 'auto_big_int' | 'uuid' | 'manual'>('auto_int');
+const kind = ref<'table' | 'view' | 'materialized_view' | 'foreign_table'>('view');
+const definition = ref('SELECT * FROM existing_table');
+const showPreview = ref(false);
+const previewData = ref<AxiosResponse<any, any>>();
+
+const saving = ref(false);
+
+watch(() => singleton.value, setOptionsForSingleton);
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function setOptionsForSingleton() {}
+
+async function preview() {
+	const { data } = await api.post(`/collections/preview`, {
+		query: definition.value,
+	});
+
+	showPreview.value = true;
+	previewData.value = data;
+}
+
+async function save() {
+	saving.value = true;
+
+	try {
+		await api.post(`/collections`, {
+			collection: collectionName.value,
+			// fields: [getPrimaryKeyField(), ...getSystemFields()],
+			schema: {},
+			meta: {
+				// sort_field: sortField.value,
+				// archive_field: archiveField.value,
+				// archive_value: archiveValue.value,
+				// unarchive_value: unarchiveValue.value,
+				singleton: singleton.value,
+				kind: kind.value,
+				definition: definition.value,
+			},
+		});
+
+		const storeHydrations: Promise<void>[] = [];
+
+		storeHydrations.push(collectionsStore.hydrate(), fieldsStore.hydrate());
+		await Promise.all(storeHydrations);
+
+		notify({
+			title: t('collection_created'),
+		});
+
+		router.replace(`/settings/data-model/${collectionName.value}`);
+	} catch (err: any) {
+		unexpectedError(err);
+	} finally {
+		saving.value = false;
+	}
+}
+</script>
+
 <template>
 	<v-drawer
 		:title="t('creating_new_custom_collection')"
@@ -132,123 +217,15 @@
 	</v-drawer>
 </template>
 
-<script lang="ts">
-import { useI18n } from 'vue-i18n';
-import { defineComponent, ref, watch } from 'vue';
-import api from '@/api';
-import { useFieldsStore } from '@/stores/fields';
-import { useCollectionsStore } from '@/stores/collections';
-import { notify } from '@/utils/notify';
-import { useDialogRoute } from '@/composables/use-dialog-route';
-import { useRouter } from 'vue-router';
-import { unexpectedError } from '@/utils/unexpected-error';
-import { AxiosResponse } from 'axios';
-
-export default defineComponent({
-	setup() {
-		const { t } = useI18n();
-
-		const router = useRouter();
-
-		const collectionsStore = useCollectionsStore();
-		const fieldsStore = useFieldsStore();
-
-		const isOpen = useDialogRoute();
-
-		const currentTab = ref(['collection_setup']);
-
-		const collectionName = ref(null);
-		const singleton = ref(false);
-		const primaryKeyFieldName = ref('id');
-		const primaryKeyFieldType = ref<'auto_int' | 'auto_big_int' | 'uuid' | 'manual'>('auto_int');
-		const kind = ref<'table' | 'view' | 'materialized_view' | 'foreign_table'>('view');
-		const definition = ref('SELECT * FROM existing_table');
-		const showPreview = ref(false);
-		const previewData = ref<AxiosResponse<any, any>>();
-
-		const saving = ref(false);
-
-		watch(() => singleton.value, setOptionsForSingleton);
-
-		return {
-			t,
-			router,
-			isOpen,
-			currentTab,
-			save,
-			preview,
-			primaryKeyFieldName,
-			primaryKeyFieldType,
-			collectionName,
-			saving,
-			singleton,
-			kind,
-			definition,
-			showPreview,
-			showPreviewHeader: Boolean(previewData.value),
-			previewData,
-		};
-
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		function setOptionsForSingleton() {}
-
-		async function preview() {
-			const { data } = await api.post(`/collections/preview`, {
-				query: definition.value,
-			});
-
-			showPreview.value = true;
-			previewData.value = data;
-		}
-
-		async function save() {
-			saving.value = true;
-
-			try {
-				await api.post(`/collections`, {
-					collection: collectionName.value,
-					// fields: [getPrimaryKeyField(), ...getSystemFields()],
-					schema: {},
-					meta: {
-						// sort_field: sortField.value,
-						// archive_field: archiveField.value,
-						// archive_value: archiveValue.value,
-						// unarchive_value: unarchiveValue.value,
-						singleton: singleton.value,
-						kind: kind.value,
-						definition: definition.value,
-					},
-				});
-
-				const storeHydrations: Promise<void>[] = [];
-
-				storeHydrations.push(collectionsStore.hydrate(), fieldsStore.hydrate());
-				await Promise.all(storeHydrations);
-
-				notify({
-					title: t('collection_created'),
-				});
-
-				router.replace(`/settings/data-model/${collectionName.value}`);
-			} catch (err: any) {
-				unexpectedError(err);
-			} finally {
-				saving.value = false;
-			}
-		}
-	},
-});
-</script>
-
 <style lang="scss" scoped>
-@import '@/styles/mixins/form-grid';
+@use '@/styles/mixins';
 
 .type-title {
 	margin-bottom: 48px;
 }
 
 .grid {
-	@include form-grid;
+	@include mixins.form-grid;
 }
 
 .system :deep(.v-input .input) {

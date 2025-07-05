@@ -47,7 +47,7 @@ const { breadcrumb } = useBreadcrumb();
 
 const revisionsDrawerDetailRef = ref<InstanceType<typeof RevisionsDrawerDetail> | null>(null);
 
-const { info: collectionInfo, defaults, primaryKeyField, isSingleton, accountabilityScope } = useCollection(collection);
+const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, accountabilityScope } = useCollection(collection);
 
 const {
 	readVersionsAllowed,
@@ -109,10 +109,17 @@ const title = computed(() => {
 			: t('editing_unit', { unit: t(`collection_names_singular.${props.collection}`) });
 	}
 
-	return viewing.value
-		? t('viewing_in', { collection: collectionInfo.value?.name })
-		: isNew.value
+	const hasName = (nameField.value !== null)
+	const name = (hasName && item.value !== null && item.value[nameField.value]) || ''
+
+	return isNew.value
 		? t('creating_in', { collection: collectionInfo.value?.name })
+		:
+		hasName 
+		? name 
+		:
+		viewing.value
+		? t('viewing_in', { collection: collectionInfo.value?.name })
 		: t('editing_in', { collection: collectionInfo.value?.name });
 });
 

@@ -18,6 +18,7 @@ export type DirectusCollection<Schema = any> = {
 			archive_value: string | null;
 			unarchive_value: string | null;
 			sort_field: string | null;
+			name_field: string | null;
 			accountability: string | null;
 			color: string | null;
 			item_duplication_fields: string[] | null;

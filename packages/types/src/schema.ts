@@ -22,6 +22,7 @@ export type CollectionOverview = {
 	primary: string;
 	singleton: boolean;
 	sortField: string | null;
+	nameField: string | null;
 	note: string | null;
 	accountability: 'all' | 'activity' | null;
 	fields: {

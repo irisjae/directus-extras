@@ -14,6 +14,7 @@ Note that `dbType` varies across databases. This is based on Postgres.
 export const COLLECTION_DEFAULTS = {
 	singleton: false,
 	sortField: null,
+	nameField: null,
 	note: null,
 	accountability: 'all',
 } satisfies CollectionDefaults;

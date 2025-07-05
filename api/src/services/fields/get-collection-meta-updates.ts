@@ -8,6 +8,7 @@ export function getCollectionMetaUpdates(
 	collectionMetas: {
 		archive_field?: null | string;
 		sort_field?: null | string;
+		name_field?: null | string;
 		item_duplication_fields?: null | string | string[];
 		collection: string;
 	}[],
@@ -29,9 +30,12 @@ export function getCollectionMetaUpdates(
 				meta.updates['archive_field'] = null;
 				hasUpdates = true;
 			}
-
 			if (collectionMeta?.sort_field === field) {
 				meta.updates['sort_field'] = null;
+				hasUpdates = true;
+			}
+			if (collectionMeta?.name_field === field) {
+				meta.updates['name_field'] = null;
 				hasUpdates = true;
 			}
 		}

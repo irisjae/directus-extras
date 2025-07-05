@@ -1,8 +1,8 @@
 import { Knex } from 'knex';
-import { SchemaInspector } from 'knex-schema-inspector/dist/types/schema-inspector';
-import { Table } from 'knex-schema-inspector/dist/types/table';
-import { Column } from 'knex-schema-inspector/dist/types/column';
-import { stripQuotes } from 'knex-schema-inspector/dist/utils/strip-quotes';
+import type { SchemaInspector } from '../types/schema-inspector.js';
+import type { Table } from '../types/table.js';
+import type { Column } from '../types/column.js';
+import { stripQuotes } from '../utils/strip-quotes.js';
 
 enum TableType {
 	OrdinaryTable = 'r',

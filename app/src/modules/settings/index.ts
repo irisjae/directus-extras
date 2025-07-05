@@ -80,6 +80,9 @@ export default defineModule({
 						{
 							path: 'custom/+',
 							name: 'settings-add-new-custom',
+							meta: {
+								isFloatingView: true,
+							},
 							components: {
 								add: NewCustomCollection,
 							},

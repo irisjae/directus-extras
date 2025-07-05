@@ -85,7 +85,7 @@ const props = withDefaults(defineProps<Props>(), {
 	trim: false,
 	autocomplete: 'off',
 	small: false,
-	stripTrailingZeroes: false,
+	stripZeroes: false,
 });
 
 const emit = defineEmits(['click', 'keydown', 'update:modelValue', 'focus', 'keydown:space', 'keydown:enter']);

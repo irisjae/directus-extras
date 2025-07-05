@@ -157,7 +157,7 @@ export class CollectionsService {
 							await trx.schema.createTable(payload.collection, (table) => {
 								for (const field of payload.fields!) {
 									if (field.type && ALIAS_TYPES.includes(field.type) === false) {
-										fieldsService.addColumnToTable(table, field);
+										fieldsService.addColumnToTable(table, payload.collection, field);
 									}
 								}
 							});
@@ -171,7 +171,31 @@ export class CollectionsService {
 							const fieldPayloads = payload
 								.fields!.filter((field) => field.meta)
 								.map((field) => field.meta) as FieldMeta[];
-							await fieldItemsService.createMany(fieldPayloads, {
+							
+							// Sort new fields that does not have any group defined, in ascending order.
+							// Lodash merge is used so that the "sort" can be overridden if defined.
+							let sortedFieldPayloads = fieldPayloads
+								.filter((field) => field?.group === undefined || field?.group === null)
+								.map((field, index) => merge({ sort: index + 1 }, field));
+
+							// Sort remaining new fields with group defined, if any, in ascending order.
+							// sortedFieldPayloads will be less than fieldPayloads if it filtered out any fields with group defined.
+							if (sortedFieldPayloads.length < fieldPayloads.length) {
+								const fieldsWithGroups = groupBy(
+									fieldPayloads.filter((field) => field?.group),
+									(field) => field?.group,
+								);
+
+								// The sort order is restarted from 1 for fields in each group and appended to sortedFieldPayloads.
+								// Lodash merge is used so that the "sort" can be overridden if defined.
+								for (const [_group, fields] of Object.entries(fieldsWithGroups)) {
+									sortedFieldPayloads = sortedFieldPayloads.concat(
+										fields.map((field, index) => merge({ sort: index + 1 }, field)),
+									);
+								}
+							}
+
+							await fieldItemsService.createMany(sortedFieldPayloads, {
 								bypassEmitAction: (params) =>
 									opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
 							});
@@ -597,7 +621,12 @@ export class CollectionsService {
 
 			await transaction(this.knex, async (trx) => {
 				if (collectionToBeDeleted!.schema) {
-					await trx.schema.dropTable(collectionKey);
+					if (collectionToBeDeleted!.meta?.kind === 'view') {
+						await trx.schema.dropView(collectionKey);
+					}
+					else {
+						await trx.schema.dropTable(collectionKey);
+					}
 				}
 
 				// Make sure this collection isn't used as a group in any other collections
@@ -674,7 +703,7 @@ export class CollectionsService {
 					// only process duplication fields if related collections have them
 					if (collectionRelationList.size !== 0) {
 						const collectionMetas = await trx
-							.select('collection', 'archive_field', 'sort_field', 'item_duplication_fields')
+							.select('collection', 'archive_field', 'sort_field', 'name_field', 'item_duplication_fields')
 							.from('directus_collections')
 							.whereIn('collection', Array.from(collectionRelationList))
 							.whereNotNull('item_duplication_fields');
