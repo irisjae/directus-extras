@@ -4,6 +4,7 @@ import { useRelationPermissionsM2O } from '@/composables/use-relation-permission
 import { RelationQuerySingle, useRelationSingle } from '@/composables/use-relation-single';
 import { useCollectionsStore } from '@/stores/collections';
 import { adjustFieldsForDisplays } from '@/utils/adjust-fields-for-displays';
+import { router } from '@/router';
 import { parseFilter } from '@/utils/parse-filter';
 import DrawerCollection from '@/views/private/components/drawer-collection.vue';
 import DrawerItem from '@/views/private/components/drawer-item.vue';
@@ -124,7 +125,7 @@ function onPreviewClick() {
 	if (editModalActive.value === true) return;
 
 	if (props.disabled) {
-		editModalActive.value = true;
+		router.push(getLinkForItem());
 		return;
 	}
 	

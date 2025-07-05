@@ -14,6 +14,7 @@ import DrawerBatch from '@/views/private/components/drawer-batch.vue';
 import DrawerCollection from '@/views/private/components/drawer-collection.vue';
 import DrawerItem from '@/views/private/components/drawer-item.vue';
 import SearchInput from '@/views/private/components/search-input.vue';
+import { router } from '@/router';
 import { Filter } from '@directus/types';
 import { deepMap, getFieldsFromTemplate } from '@directus/utils';
 import { clamp, get, isEmpty, isNil } from 'lodash';
@@ -282,7 +283,11 @@ function editItem(item: DisplayItem) {
 }
 
 function editRow({ item }: { item: DisplayItem }) {
-	editItem(item);
+	if (props.disabled) {
+		router.push(getLinkForItem(item));
+	} else {
+		editItem(item);
+	}
 }
 
 function stageEdits(item: Record<string, any>) {
@@ -547,7 +552,7 @@ function getLinkForItem(item: DisplayItem) {
 							clickable
 							:dense="totalItemCount > 4"
 							:class="{ deleted: element.$type === 'deleted' }"
-							@click="editItem(element)"
+							@click="editRow({ item: element })"
 						>
 							<v-icon v-if="allowDrag" name="drag_handle" class="drag-handle" left @click.stop="() => {}" />
 
