@@ -30,6 +30,8 @@ export type CollectionMeta = {
 	sort: number | null;
 	group: string | null;
 	collapse: 'open' | 'closed' | 'locked';
+	kind?: 'view' | 'materialized_view' | 'table' | 'foreign_table';
+	definition?: string;
 };
 
 export interface Collection {

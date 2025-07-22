@@ -27,6 +27,7 @@ export type DirectusCollection<Schema = any> = {
 			collapse: string;
 			preview_url: string | null;
 			versioning: boolean;
+			kind?: 'view' | 'materialized_view' | 'table' | 'foreign_table';
 		}
 	>;
 	schema:

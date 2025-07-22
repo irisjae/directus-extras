@@ -9,6 +9,7 @@ export function getCollectionMetaUpdates(
 		archive_field?: null | string;
 		sort_field?: null | string;
 		name_field?: null | string;
+		kind?: null | string;
 		item_duplication_fields?: null | string | string[];
 		collection: string;
 	}[],

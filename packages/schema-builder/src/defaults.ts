@@ -17,6 +17,7 @@ export const COLLECTION_DEFAULTS = {
 	nameField: null,
 	note: null,
 	accountability: 'all',
+	kind: null,
 } satisfies CollectionDefaults;
 
 export const FIELD_DEFAULTS = {

@@ -87,31 +87,31 @@ export class CollectionsService {
 
 			const kind = payload.meta?.kind || 'table';
 
-			switch (kind) {
-				// case 'table':
-				case 'view':
-					await this.knex.schema.raw(`
-                      CREATE VIEW ${payload.collection} AS ${payload.meta?.definition};
-					`);
-					break;
+			// Create the collection/fields in a transaction so it'll be reverted in case of errors or
+			// permission problems. This might not work reliably in MySQL, as it doesn't support DDL in
+			// transactions.
+			await this.knex.transaction(async (trx) => {
+				switch (kind) {
+					// case 'table':
+					case 'view':
+						await this.knex.schema.raw(`
+			      CREATE VIEW ${payload.collection} AS ${payload.meta!.definition};
+						`);
+						break;
 
-				case 'materialized_view':
-					await this.knex.schema.raw(`
-                      CREATE MATERIALIZED VIEW ${payload.collection} AS ${payload.meta?.definition};
-					`);
-					break;
+					case 'materialized_view':
+						await this.knex.schema.raw(`
+			      CREATE MATERIALIZED VIEW ${payload.collection} AS ${payload.meta!.definition};
+						`);
+						break;
 
-				case 'foreign_table':
-					await this.knex.schema.raw(`
-                      CREATE FOREIGN TABLE ${payload.collection} (${payload.meta?.definition});
-					`);
-					break;
+					case 'foreign_table':
+						await this.knex.schema.raw(`
+			      CREATE FOREIGN TABLE ${payload.collection} (${payload.meta!.definition});
+						`);
+						break;
 
-				default:
-					// Create the collection/fields in a transaction so it'll be reverted in case of errors or
-					// permission problems. This might not work reliably in MySQL, as it doesn't support DDL in
-					// transactions.
-					await this.knex.transaction(async (trx) => {
+					default:
 						if (payload.schema) {
 							// Directus heavily relies on the primary key of a collection, so we have to make sure that
 							// every collection that is created has a primary key. If no primary key field is created
@@ -201,28 +201,28 @@ export class CollectionsService {
 							});
 						}
 
-						if (payload.meta) {
-							const collectionItemsService = new ItemsService('directus_collections', {
-								knex: trx,
-								accountability: this.accountability,
-								schema: this.schema,
-							});
+				}
 
-							await collectionItemsService.createOne(
-								{
-									...payload.meta,
-									collection: payload.collection,
-								},
-								{
-									bypassEmitAction: (params) =>
-										opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
-								}
-							);
-						}
-
-						return payload.collection;
+				if (payload.meta) {
+					const collectionItemsService = new ItemsService('directus_collections', {
+						knex: trx,
+						accountability: this.accountability,
+						schema: this.schema,
 					});
-			}
+
+					await collectionItemsService.createOne(
+						{
+							...payload.meta,
+							kind,
+							collection: payload.collection,
+						},
+						{
+							bypassEmitAction: (params) =>
+								opts?.bypassEmitAction ? opts.bypassEmitAction(params) : nestedActionEvents.push(params),
+						}
+					);
+				}
+			});
 
 			return payload.collection;
 		} finally {
@@ -703,7 +703,7 @@ export class CollectionsService {
 					// only process duplication fields if related collections have them
 					if (collectionRelationList.size !== 0) {
 						const collectionMetas = await trx
-							.select('collection', 'archive_field', 'sort_field', 'name_field', 'item_duplication_fields')
+							.select('collection', 'archive_field', 'sort_field', 'name_field', 'kind', 'item_duplication_fields')
 							.from('directus_collections')
 							.whereIn('collection', Array.from(collectionRelationList))
 							.whereNotNull('item_duplication_fields');

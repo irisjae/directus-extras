@@ -60,6 +60,8 @@ export type BaseCollectionMeta = Pick<
 	| 'accountability'
 	| 'group'
 	| 'system'
+	| 'kind'
+	| 'definition'
 >;
 
 export type DataCollectionMeta = Partial<BaseCollectionMeta> & Pick<BaseCollectionMeta, 'collection' | 'note'>;
