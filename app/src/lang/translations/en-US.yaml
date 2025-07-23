@@ -658,7 +658,7 @@ reset_interface: Reset Interface
 display_not_found: 'Display "{display}" not found.'
 reset_display: Reset Display
 list-m2a: Builder (M2A)
-item_count: 'No Items | One Item | {count} Items'
+item_count: 'No Items | 1 Item | {count} Items'
 filtered_item_count: 'No Filtered Items | One Filtered Item | {count} Filtered Items'
 no_items_copy: There are no items in this collection yet.
 file_count: 'No Files | One File | {count} Files'
