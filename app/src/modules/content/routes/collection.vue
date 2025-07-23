@@ -527,7 +527,7 @@ function clearFilters() {
 			/>
 
 			<template #sidebar>
-				<sidebar-detail icon="star" close>
+				<sidebar-detail icon="more_vert" close>
 				</sidebar-detail>
 				<layout-sidebar-detail v-model="layout">
 					<component :is="`layout-options-${layout || 'tabular'}`" v-bind="layoutState" />

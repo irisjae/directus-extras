@@ -787,7 +787,7 @@ const shouldShowVersioning = computed(
 		</template>
 
 		<template #sidebar>
-			<sidebar-detail icon="star" close>
+			<sidebar-detail icon="more_vert" close>
 			</sidebar-detail>
 			<template v-if="isNew === false && actualPrimaryKey">
 				<revisions-drawer-detail
