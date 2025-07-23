@@ -22,6 +22,9 @@ const extensionsPathExists = fs.existsSync(EXTENSIONS_PATH);
 
 // https://vitejs.dev/config/
 export default defineConfig({
+	build: {
+		minify: false,
+	},
 	css: {
 		preprocessorOptions: {
 			scss: {
