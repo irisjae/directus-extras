@@ -228,6 +228,15 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'suffix',
+				name: '$t:interfaces.input.suffix',
+				type: 'string',
+				meta: {
+					width: 'half',
+					interface: 'input',
+				},
+			},
+			{
 				field: 'font',
 				name: '$t:font',
 				type: 'string',
