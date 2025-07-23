@@ -120,6 +120,10 @@ const edits = computed(() => {
 	return props.value;
 });
 
+const active = computed(() => {
+	return !props.disabled || (props.value)
+});
+
 function onPreviewClick() {
 	// Prevent double dialog in case the edit dialog is already open
 	if (editModalActive.value === true) return;
@@ -189,7 +193,7 @@ function getLinkForItem() {
 	<div v-else class="many-to-one">
 		<v-skeleton-loader v-if="loading" type="input" />
 
-		<v-list-item v-else block clickable @click="onPreviewClick">
+		<v-list-item v-else block :clickable="active" v-on="{ click: active && onPreviewClick }">
 			<div v-if="displayItem" class="preview">
 				<render-template
 					:collection="relationInfo.relatedCollection.collection"
@@ -197,11 +201,12 @@ function getLinkForItem() {
 					:template="displayTemplate"
 				/>
 			</div>
+			<div v-else-if="disabled" class="placeholder">{{ t('no_item') }}</div>
 			<div v-else class="placeholder">{{ t(enableSelect ? 'select_an_item' : 'create_item') }}</div>
 
 			<div class="spacer" />
 
-			<div class="item-actions">
+			<div class="item-actions" v-if="!disabled">
 				<template v-if="displayItem">
 					<router-link
 						v-if="enableLink"
@@ -212,21 +217,11 @@ function getLinkForItem() {
 					>
 						<v-icon name="launch" />
 					</router-link>
-
-					<v-icon v-if="!disabled" v-tooltip="t('edit_item')" name="edit" clickable @click="editModalActive = true" />
-
-					<v-remove
-						v-if="!disabled"
-						deselect
-						:item-info="relationInfo"
-						:item-edits="edits"
-						@action="$emit('input', null)"
-					/>
 				</template>
 
 				<template v-else>
 					<v-icon
-						v-if="!disabled && createAllowed && enableCreate"
+						v-if="createAllowed && enableCreate"
 						v-tooltip="t('create_item')"
 						class="add"
 						name="add"
