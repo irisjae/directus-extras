@@ -85,7 +85,7 @@ const { t } = useI18n();
 	}
 
 	&.readonly button {
-		cursor: not-allowed;
+		cursor: unset;
 	}
 
 	.v-checkbox {

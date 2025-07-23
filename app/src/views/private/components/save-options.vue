@@ -56,7 +56,7 @@ const { t } = useI18n();
 	}
 
 	&.disabled {
-		cursor: not-allowed;
+		cursor: unset;
 	}
 }
 

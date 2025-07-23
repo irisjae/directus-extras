@@ -50,7 +50,7 @@ withDefaults(defineProps<Props>(), {
 	}
 
 	&.disabled {
-		cursor: not-allowed;
+		cursor: unset;
 		pointer-events: none;
 
 		& :deep(> *) {

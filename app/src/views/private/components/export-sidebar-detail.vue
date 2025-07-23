@@ -749,7 +749,7 @@ async function exportDataFiles() {
 
 	&:disabled {
 		color: var(--theme--foreground-subdued);
-		cursor: not-allowed;
+		cursor: unset;
 	}
 }
 </style>

@@ -127,7 +127,7 @@ const { t } = useI18n();
 	}
 
 	.null {
-		cursor: not-allowed;
+		cursor: unset;
 	}
 
 	:is(.permissions-overview-toggle, .null) + :is(.permissions-overview-toggle, .null) {

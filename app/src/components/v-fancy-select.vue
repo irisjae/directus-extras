@@ -118,7 +118,7 @@ function toggle(item: Record<string, any>) {
 	}
 
 	&.disabled {
-		cursor: not-allowed;
+		cursor: unset;
 	}
 
 	.icon {

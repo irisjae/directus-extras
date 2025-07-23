@@ -182,7 +182,7 @@ function onClickIcon(e: MouseEvent): void {
 	}
 
 	&:disabled {
-		cursor: not-allowed;
+		cursor: unset;
 
 		.label {
 			color: var(--theme--foreground-subdued);

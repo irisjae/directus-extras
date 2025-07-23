@@ -258,7 +258,7 @@ function onClick(event: PointerEvent) {
 	&.disabled {
 		--v-list-item-color: var(--theme--foreground-subdued) !important;
 
-		cursor: not-allowed;
+		cursor: unset;
 	}
 
 	&.dense {

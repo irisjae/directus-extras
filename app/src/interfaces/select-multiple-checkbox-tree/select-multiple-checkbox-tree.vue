@@ -135,6 +135,6 @@ const searchDebounced = ref('');
 
 .footer > button:disabled {
 	color: var(--theme--form--field--input--foreground-subdued);
-	cursor: not-allowed;
+	cursor: unset;
 }
 </style>

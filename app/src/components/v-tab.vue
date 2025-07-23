@@ -50,7 +50,7 @@ function onClick() {
 	}
 
 	&.disabled {
-		cursor: not-allowed;
+		cursor: unset;
 		opacity: 0.5;
 	}
 }

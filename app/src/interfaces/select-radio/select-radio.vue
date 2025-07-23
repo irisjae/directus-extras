@@ -186,11 +186,11 @@ const customIcon = computed(() => {
 	&.disabled {
 		background-color: var(--theme--form--field--input--background-subdued);
 		border-color: transparent;
-		cursor: not-allowed;
+		cursor: unset;
 
 		input {
 			color: var(--theme--form--field--input--foreground-subdued);
-			cursor: not-allowed;
+			cursor: unset;
 
 			&::placeholder {
 				color: var(--theme--form--field--input--foreground-subdued);

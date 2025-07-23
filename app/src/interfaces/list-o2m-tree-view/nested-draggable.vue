@@ -325,7 +325,7 @@ function stageEdits(item: Record<string, any>) {
 	}
 
 	&:not(.draggable) .preview {
-		cursor: not-allowed;
+		cursor: unset;
 	}
 }
 

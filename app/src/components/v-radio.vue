@@ -90,7 +90,7 @@ function emitValue(): void {
 	}
 
 	&:disabled {
-		cursor: not-allowed;
+		cursor: unset;
 
 		.label {
 			color: var(--theme--foreground-subdued);

@@ -313,7 +313,7 @@ async function onClick(event: MouseEvent) {
 	color: var(--v-button-color-disabled, var(--theme--foreground-subdued));
 	background-color: var(--v-button-background-color-disabled, var(--theme--background-normal));
 	border: var(--theme--border-width) solid var(--v-button-background-color-disabled, var(--theme--background-normal));
-	cursor: not-allowed;
+	cursor: unset;
 }
 
 .rounded,
