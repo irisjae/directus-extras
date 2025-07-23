@@ -24,7 +24,6 @@ const AliasCollection: Collection = {
 		display_template: null,
 		preview_url: null,
 		sort_field: null,
-		name_field: null,
 		archive_field: null,
 		archive_value: null,
 		unarchive_value: null,
