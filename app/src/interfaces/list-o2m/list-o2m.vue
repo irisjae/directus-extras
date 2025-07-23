@@ -33,6 +33,7 @@ const props = withDefaults(
 		layout?: LAYOUTS;
 		tableSpacing?: 'compact' | 'cozy' | 'comfortable';
 		fields?: Array<string>;
+		fieldsMeta?: { [key: string]: any; };
 		template?: string | null;
 		disabled?: boolean;
 		enableCreate?: boolean;
@@ -203,6 +204,7 @@ watch(
 					value: key,
 					width: contentWidth[key] < 10 ? contentWidth[key] * 16 + 10 : 160,
 					sortable: !['json'].includes(field.type),
+					... (props.fieldsMeta?.[key] || {})
 				};
 			})
 			.filter((key) => key !== null);
