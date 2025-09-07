@@ -117,6 +117,18 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'listExport',
+				name: '$t:list_export',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					width: 'full',
+					label: '$t:list_export_label',
+				},
+			},
+			{
 				field: 'fields',
 				name: '$t:columns',
 				meta: {

@@ -922,6 +922,7 @@ pivot_field_template: Pivot Field Template
 pivot_placeholder: Empty Pivot Label
 virtual_pivot_field: Virtual Pivot Field
 virtual_pivot_table: Virtual Pivot Table
+list_export: Allow Export
 columns: Columns
 collection_setup: Collection Setup
 optional_system_fields: Optional Fields

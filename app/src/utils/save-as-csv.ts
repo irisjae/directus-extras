@@ -9,7 +9,7 @@ import { computed } from 'vue';
 /**
  * Saves the given collection + items combination as a CSV file
  */
-export async function saveAsCSV(collection: string, fields: string[], items: Item[]) {
+export async function saveAsCSV(collection: string, fields: string[], items: Item[], options?: { [key: string]: any; }) {
 	const fieldsStore = useFieldsStore();
 
 	const fieldsUsed: Record<string, Field | null> = {};
@@ -28,18 +28,26 @@ export async function saveAsCSV(collection: string, fields: string[], items: Ite
 		for (const key of fields) {
 			let name: string;
 
-			const keyParts = key.split('.');
-
-			if (keyParts.length > 1) {
-				const names = keyParts.map((fieldKey, index) => {
-					const pathPrefix = keyParts.slice(0, index);
-					const field = fieldsStore.getField(collection, [...pathPrefix, fieldKey].join('.'));
-					return field?.name ?? fieldKey;
-				});
-
-				name = names.join(' -> ');
+			if (options?.[key]?.text) {
+				name = options[key].text as string;
 			} else {
-				name = fieldsUsed[key]?.name ?? key;
+				const keyParts = key.split('.');
+
+				if (keyParts.length > 1) {
+					const names = keyParts.map((fieldKey, index) => {
+						const pathPrefix = keyParts.slice(0, index);
+						const field = fieldsStore.getField(collection, [...pathPrefix, fieldKey].join('.'));
+						return field?.name ?? fieldKey;
+					});
+
+					if (options?.__plain) {
+						name = names[names.length - 1];
+					} else {
+						name = names.join(' -> ');
+					}
+				} else {
+					name = fieldsUsed[key]?.name ?? key;
+				}
 			}
 
 			const value = getFromAliasedItem(item, key);

@@ -9,6 +9,7 @@ import { LAYOUTS } from '@/types/interfaces';
 import { addRelatedPrimaryKeyToFields } from '@/utils/add-related-primary-key-to-fields';
 import { adjustFieldsForDisplays } from '@/utils/adjust-fields-for-displays';
 import { formatItemsCountPaginated } from '@/utils/format-items-count';
+import { saveAsCSV } from '@/utils/save-as-csv';
 import { getItemRoute } from '@/utils/get-route';
 import { parseFilter } from '@/utils/parse-filter';
 import DrawerBatch from '@/views/private/components/drawer-batch.vue';
@@ -38,6 +39,7 @@ const props = withDefaults(
 		pivotFieldTemplate?: string;
 		virtualPivotField?: boolean;
 		virtualPivotTable?: boolean;
+		listExport?: boolean;
 		fields?: Array<string>;
 		fieldsMeta?: { [key: string]: any; };
 		template?: string | null;
@@ -59,6 +61,7 @@ const props = withDefaults(
 		pivotFieldTemplate: null,
 		virtualPivotField: false,
 		virtualPivotTable: false,
+		listExport: false,
 		fields: () => ['id'],
 		template: null,
 		disabled: false,
@@ -473,6 +476,17 @@ function getLinkForItem(item: DisplayItem) {
 				</div>
 
 				<v-button
+					v-if="listExport && disabled"
+					v-tooltip.bottom="t('label_export')"
+					rounded
+					icon
+					secondary
+					@click="fetchItems({ limit: -1, page: 1 }).then((items) => saveAsCSV(relationInfo.relatedCollection.collection, props.fields, items, { __plain: true, ... (fieldsMeta ?? {}) }))"
+				>
+					<v-icon name="download" outline />
+				</v-button>
+				
+				<v-button
 					v-if="!disabled && updateAllowed && selectedKeys.length"
 					v-tooltip.bottom="t('edit')"
 					rounded
@@ -504,7 +518,6 @@ function getLinkForItem(item: DisplayItem) {
 					<v-icon name="add" />
 				</v-button>
 			</div>
-
 			<v-table
 				v-if="layout === LAYOUTS.TABLE"
 				v-model:sort="manualSort"
