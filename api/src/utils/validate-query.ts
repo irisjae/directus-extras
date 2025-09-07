@@ -22,7 +22,12 @@ const querySchema = Joi.object({
 			: Joi.number().integer().min(-1),
 	offset: Joi.number().integer().min(0),
 	page: Joi.number().integer().min(0),
-	meta: Joi.array().items(Joi.string().valid('total_count', 'filter_count')),
+	meta: Joi.array().items(
+		Joi.alternatives().try(
+			Joi.string().valid('total_count', 'filter_count'),
+			Joi.object({ virtual: Joi.array() })
+		)
+	),
 	search: Joi.string(),
 	export: Joi.string().valid('csv', 'json', 'xml', 'yaml'),
 	version: Joi.string(),

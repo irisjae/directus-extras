@@ -1,5 +1,8 @@
 import { DeepPartial, Field } from '@directus/types';
 import { defineInterface } from '@directus/extensions';
+import { useFieldsStore } from '@/stores/fields';
+import { useRelationsStore } from '@/stores/relations';
+import { useRelationM2O } from '@/composables/use-relation-m2o';
 import InterfaceListO2M from './list-o2m.vue';
 import PreviewSVG from './preview.svg?raw';
 
@@ -14,9 +17,41 @@ export default defineInterface({
 	group: 'relational',
 	relational: true,
 	options: ({ relations, field: { meta } }) => {
+		const fieldsStore = useFieldsStore();
+		const relationsStore = useRelationsStore();
+
 		const collection = relations.o2m?.collection;
 		const options = meta?.options ?? {};
 
+		const fields = fieldsStore.getFieldsForCollection(collection);
+		
+		const pivotTemplateOptions: () => DeepPartial<Field>[] = () => {
+			if (! options.pivotField) {
+				return [];
+			}
+
+			const pivotFields = fields.filter((field) => field.field === options.pivotField);
+			
+			if (! pivotFields?.[0]?.meta?.special?.includes?.('m2o')) {
+				return [];
+			}
+
+			const pivotCollection = relationsStore.getRelationsForField(collection, options.pivotField)[0].related_collection;
+			
+			return [
+				{
+					field: 'pivotFieldTemplate',
+					name: '$t:pivot_field_template',
+					meta: {
+						interface: 'system-display-template',
+						options: {
+							collectionName: pivotCollection,
+						},
+						width: 'full',
+					},
+				},
+			];
+		};
 		const tableOptions: DeepPartial<Field>[] = [
 			{
 				field: 'tableSpacing',
@@ -42,6 +77,42 @@ export default defineInterface({
 							},
 						],
 					},
+					width: 'half',
+				},
+			},
+			{
+				field: 'pivotField',
+				name: '$t:pivot_field',
+				meta: {
+					interface: 'system-field',
+					options: {
+						collectionName: collection,
+					},
+					width: 'full',
+				},
+			},
+			... pivotTemplateOptions(),
+			{
+				field: 'pivotPlaceholder',
+				name: '$t:pivot_placeholder',
+				meta: {
+					interface: 'input',
+					width: 'full',
+				},
+			},
+			{
+				field: 'virtualPivotField',
+				name: '$t:virtual_pivot_field',
+				meta: {
+					interface: 'boolean',
+					width: 'half',
+				},
+			},
+			{
+				field: 'virtualPivotTable',
+				name: '$t:virtual_pivot_table',
+				meta: {
+					interface: 'boolean',
 					width: 'half',
 				},
 			},

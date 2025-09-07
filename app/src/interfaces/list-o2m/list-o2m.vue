@@ -2,6 +2,7 @@
 import { Sort } from '@/components/v-table/types';
 import { DisplayItem, RelationQueryMultiple, useRelationMultiple } from '@/composables/use-relation-multiple';
 import { useRelationO2M } from '@/composables/use-relation-o2m';
+import { usePivot } from '@/composables/use-pivot';
 import { useRelationPermissionsO2M } from '@/composables/use-relation-permissions';
 import { useFieldsStore } from '@/stores/fields';
 import { LAYOUTS } from '@/types/interfaces';
@@ -32,6 +33,11 @@ const props = withDefaults(
 		width: string;
 		layout?: LAYOUTS;
 		tableSpacing?: 'compact' | 'cozy' | 'comfortable';
+		pivotField?: string;
+		pivotPlaceholder?: string;
+		pivotFieldTemplate?: string;
+		virtualPivotField?: boolean;
+		virtualPivotTable?: boolean;
 		fields?: Array<string>;
 		fieldsMeta?: { [key: string]: any; };
 		template?: string | null;
@@ -49,6 +55,10 @@ const props = withDefaults(
 		value: () => [],
 		layout: LAYOUTS.LIST,
 		tableSpacing: 'cozy',
+		pivotField: null,
+		pivotFieldTemplate: null,
+		virtualPivotField: false,
+		virtualPivotTable: false,
 		fields: () => ['id'],
 		template: null,
 		disabled: false,
@@ -103,6 +113,19 @@ const limit = ref(props.limit);
 const page = ref(1);
 const search = ref('');
 const searchFilter = ref<Filter>();
+const pivot = ref(null);
+const pivotPlaceholder = props.pivotPlaceholder || 'Default';
+const { fetchedItems: pivots } = usePivot(primaryKey, relationInfo.value, props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
+
+const pivotItems = computed(() => {
+	return [
+		{ text: pivotPlaceholder, value: null },
+		... pivots.value.map(({ pivotDisplay, pivot }) => ({
+			text: pivotDisplay,
+			value: pivot,
+		}))
+	];
+});
 
 const manualSort = ref<Sort | null>(
 	props.sort && !relationInfo.value?.sortField ? { by: props.sort, desc: props.sortDirection === '-' } : null,
@@ -120,7 +143,7 @@ const query = computed<RelationQueryMultiple>(() => {
 	}
 
 	if (searchFilter.value) {
-		q.filter = searchFilter.value;
+		q.filter = searchFilter.value
 	}
 
 	if (search.value) {
@@ -144,13 +167,15 @@ const {
 	remove,
 	select,
 	displayItems,
+	fetchedItems,
+	fetchItems,
 	totalItemCount,
 	loading,
 	selected,
 	isItemSelected,
 	isLocalItem,
 	getItemEdits,
-} = useRelationMultiple(value, query, relationInfo, primaryKey);
+} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, pivot, props.virtualPivotTable);
 
 const { createAllowed, deleteAllowed, updateAllowed } = useRelationPermissionsO2M(relationInfo);
 
@@ -425,6 +450,14 @@ function getLinkForItem(item: DisplayItem) {
 	<div v-else class="one-to-many">
 		<div>
 			<div v-if="layout === LAYOUTS.TABLE" class="actions top" :class="width">
+				<v-select
+					v-if="pivotField !== null"
+					v-model="pivot"
+					:fullWidth="false"
+					:items="pivotItems"
+					class="pivot-select"
+				/>
+				
 				<div class="spacer" />
 
 				<div v-if="totalItemCount" class="item-count">
@@ -653,6 +686,11 @@ function getLinkForItem(item: DisplayItem) {
 </template>
 
 <style lang="scss">
+.actions {
+	.pivot-select > .v-menu-activator > .v-input {
+		min-width: 200px;
+	}
+}
 .one-to-many {
 	.render-template {
 		line-height: 1;

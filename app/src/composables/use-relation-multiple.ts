@@ -36,6 +36,9 @@ export function useRelationMultiple(
 	previewQuery: Ref<RelationQueryMultiple>,
 	relation: Ref<RelationM2A | RelationM2M | RelationO2M | undefined>,
 	itemId: Ref<string | number | null>,
+	pivotField?: string,
+	pivot?: Ref<any>,
+	virtualPivotTable?: boolean,
 ) {
 	const loading = ref(false);
 	const fetchedItems = ref<Record<string, any>[]>([]);
@@ -80,7 +83,7 @@ export function useRelationMultiple(
 	});
 
 	watch(
-		[previewQuery, itemId, relation],
+		[previewQuery, itemId, pivot, relation],
 		(newData, oldData) => {
 			if (!isEqual(newData, oldData)) {
 				updateFetchedItems();
@@ -331,14 +334,7 @@ export function useRelationMultiple(
 		}
 	}
 
-	async function updateFetchedItems() {
-		if (!relation.value) return;
-
-		if (itemId.value === undefined || itemId.value === '+') {
-			fetchedItems.value = [];
-			return;
-		}
-
+	async function fetchItems(options: Partial<RelationQueryMultiple>) {
 		let targetCollection: string;
 		const reverseJunctionField = relation.value.reverseJunctionField.field;
 		const fields = new Set(previewQuery.value.fields);
@@ -369,28 +365,50 @@ export function useRelationMultiple(
 
 		if (relation.value.sortField) fields.add(relation.value.sortField);
 
+		const filterOptions = pivotField ? virtualPivotTable ? {
+			filter: { _and: [] },
+			meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
+		} : { 
+			filter: {
+				_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+			}
+		} : { 
+			filter: {
+				_and: [{ [reverseJunctionField]: itemId.value }] 
+			}
+		};
+
+		if (previewQuery.value.filter) {
+			filterOptions.filter._and.push(previewQuery.value.filter);
+		}
+
+		const response = await api.get(getEndpoint(targetCollection), {
+			params: {
+				search: previewQuery.value.search,
+				fields: Array.from(fields),
+				page: previewQuery.value.page,
+				limit: previewQuery.value.limit,
+				sort: previewQuery.value.sort,
+				...filterOptions,
+				...options
+			},
+		});
+
+		return response.data.data;
+	}
+	async function updateFetchedItems() {
+		if (!relation.value) return;
+
+		if (itemId.value === undefined || itemId.value === '+') {
+			fetchedItems.value = [];
+			return;
+		}
+
 		try {
 			loading.value = true;
 
 			if (itemId.value !== '+') {
-				const filter: Filter = { _and: [{ [reverseJunctionField]: itemId.value } as Filter] };
-
-				if (previewQuery.value.filter) {
-					filter._and.push(previewQuery.value.filter);
-				}
-
-				const response = await api.get(getEndpoint(targetCollection), {
-					params: {
-						search: previewQuery.value.search,
-						fields: Array.from(fields),
-						filter,
-						page: previewQuery.value.page,
-						limit: previewQuery.value.limit,
-						sort: previewQuery.value.sort,
-					},
-				});
-
-				fetchedItems.value = response.data.data;
+				fetchedItems.value = await fetchItems({});
 			}
 		} catch (error) {
 			unexpectedError(error);
@@ -400,7 +418,7 @@ export function useRelationMultiple(
 	}
 
 	watch(
-		[previewQuery, itemId, relation],
+		[previewQuery, itemId, pivot, relation],
 		(newData, oldData) => {
 			const [newPreviewQuery, newItemId, newRelation] = newData;
 			const [oldPreviewQuery, oldItemId, oldRelation] = oldData;
@@ -446,10 +464,21 @@ export function useRelationMultiple(
 				break;
 		}
 
-		const filter: Filter = { _and: [{ [reverseJunctionField]: itemId.value } as Filter] };
+		const filterOptions = pivotField ? virtualPivotTable ? {
+			filter: { _and: [] },
+			meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
+		} : { 
+			filter: {
+				_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+			}
+		} : { 
+			filter: {
+				_and: [{ [reverseJunctionField]: itemId.value }] 
+			}
+		};
 
 		if (previewQuery.value.filter) {
-			filter._and.push(previewQuery.value.filter);
+			filterOptions.filter._and.push(previewQuery.value.filter);
 		}
 
 		const response = await api.get(getEndpoint(targetCollection), {
@@ -458,7 +487,7 @@ export function useRelationMultiple(
 				aggregate: {
 					count: targetPKField,
 				},
-				filter,
+				...filterOptions,
 			},
 		});
 
@@ -764,6 +793,7 @@ export function useRelationMultiple(
 		totalItemCount,
 		loading,
 		selected,
+		fetchItems,
 		fetchedSelectItems,
 		fetchedItems,
 		useActions,

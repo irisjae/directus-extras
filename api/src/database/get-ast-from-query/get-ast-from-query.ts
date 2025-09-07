@@ -45,13 +45,13 @@ export async function getAstFromQuery(options: GetAstFromQueryOptions, context: 
 		fields = [];
 	}
 
-	/**
-	 * Similarly, when grouping on a specific field, you can't have other non-aggregated fields.
-	 * The group query will override the fields query
-	 */
-	if (options.query.group) {
-		fields = options.query.group;
-	}
+	// /**
+	//  * Similarly, when grouping on a specific field, you can't have other non-aggregated fields.
+	//  * The group query will override the fields query
+	//  */
+	// if (options.query.group) {
+	// 	fields = options.query.group;
+	// }
 
 	fields = uniq(fields);
 

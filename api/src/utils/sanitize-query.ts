@@ -217,7 +217,11 @@ function sanitizeMeta(rawMeta: any) {
 	}
 
 	if (Array.isArray(rawMeta)) {
-		return rawMeta;
+		return rawMeta.map((meta) =>
+			typeof(meta) === 'object' && meta?.virtual ? ({ virtual: meta.virtual.map((virtual: any) =>
+				typeof(virtual) === 'object' && virtual?._null ? null : virtual
+			) }) : meta
+		);
 	}
 
 	return [rawMeta];

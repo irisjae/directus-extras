@@ -43,9 +43,17 @@ export function getDBQuery(
 
 	queryCopy.limit = typeof queryCopy.limit === 'number' ? queryCopy.limit : Number(env['QUERY_LIMIT_DEFAULT']);
 
+	const virtual = (queryCopy as Record<string, any>)['meta']?.filter((meta: any) => typeof(meta) === 'object' && 'virtual' in meta)?.[0]?.virtual;
+
 	// Queries with aggregates and groupBy will not have duplicate result
 	if (queryCopy.aggregate || queryCopy.group) {
-		const flatQuery = knex.from(table);
+		let flatQuery;
+		if (virtual) { 
+			const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
+			flatQuery = knex.fromRaw(`${table}(${bindingTemplates})`, virtual);
+		} else {
+			flatQuery = knex.from(table);
+		}
 
 		const fieldNodeMap = Object.fromEntries(
 			fieldNodes.map((node, index): [string, [FieldNode | FunctionFieldNode, number]] => [
@@ -88,7 +96,14 @@ export function getDBQuery(
 	}
 
 	const primaryKey = schema.collections[table]!.primary;
-	const dbQuery = knex.from(table);
+	let dbQuery;
+	if (virtual) { 
+		const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
+		dbQuery = knex.fromRaw(`${table}(${bindingTemplates})`, virtual);
+	} else {
+		dbQuery = knex.from(table);
+	}
+	
 	let sortRecords: ColumnSortRecord[] | undefined;
 	const innerQuerySortRecords: { alias: string; order: 'asc' | 'desc'; column: Knex.Raw }[] = [];
 	let hasMultiRelationalSort: boolean | undefined;
