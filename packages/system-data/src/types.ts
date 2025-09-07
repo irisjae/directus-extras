@@ -76,6 +76,7 @@ export type FieldMeta = {
 	display: string | null;
 	options: Record<string, any> | null;
 	display_options: Record<string, any> | null;
+	viewonly?: boolean;
 	readonly: boolean;
 	required: boolean;
 	sort: number | null;
@@ -99,6 +100,7 @@ export type Width = 'half' | 'half-left' | 'half-right' | 'full' | 'fill';
 export type Condition = {
 	name: string;
 	rule: Record<string, any>;
+	viewonly?: boolean;
 	readonly?: boolean;
 	hidden?: boolean;
 	options?: Record<string, any>;

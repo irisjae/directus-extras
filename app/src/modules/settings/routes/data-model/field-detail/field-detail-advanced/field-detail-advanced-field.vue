@@ -7,6 +7,7 @@ import { getCurrentLanguage } from '@/lang/get-current-language';
 
 const { t } = useI18n();
 const fieldDetailStore = useFieldDetailStore();
+const viewonly = syncFieldDetailStoreProperty('field.meta.viewonly', false);
 const readonly = syncFieldDetailStoreProperty('field.meta.readonly', false);
 const hidden = syncFieldDetailStoreProperty('field.meta.hidden', false);
 const required = syncFieldDetailStoreProperty('field.meta.required', false);
@@ -36,6 +37,11 @@ const isGenerated = computed(() => field.value.schema?.is_generated);
 		<div class="field half-left">
 			<div class="label type-label">{{ t('hidden') }}</div>
 			<v-checkbox v-model="hidden" :label="t('hidden_on_detail')" block />
+		</div>
+
+		<div class="field half-right">
+			<div class="label type-label">{{ t('viewonly') }}</div>
+			<v-checkbox v-model="viewonly" :label="t('viewonly_field_label')" block />
 		</div>
 
 		<div v-if="type !== 'group'" class="field full">

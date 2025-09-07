@@ -57,6 +57,7 @@ export type FieldMetaConditionType = {
 	hidden: boolean;
 	name: string;
 	options: FieldMetaConditionOptionType;
+	viewonly: boolean;
 	readonly: boolean;
 	required: boolean;
 	// TODO: rules use atomic operators and can nest

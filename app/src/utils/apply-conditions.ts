@@ -28,6 +28,7 @@ export function applyConditions(item: Record<string, any>, field: Field, version
 					{},
 					field.meta || {},
 					{
+						viewonly: matchingCondition.viewonly,
 						readonly: matchingCondition.readonly,
 						options: matchingCondition.options,
 						hidden: matchingCondition.hidden,

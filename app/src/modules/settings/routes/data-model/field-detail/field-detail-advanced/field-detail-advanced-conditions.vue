@@ -76,6 +76,18 @@ const repeaterFields = computed<DeepPartial<Field>[]>(() => [
 		},
 	},
 	{
+		field: 'viewonly',
+		name: t('viewonly'),
+		type: 'boolean',
+		meta: {
+			interface: 'boolean',
+			options: {
+				label: t('viewonly_field_label'),
+			},
+			width: 'half',
+		},
+	},
+	{
 		field: 'required',
 		name: t('required'),
 		type: 'boolean',
