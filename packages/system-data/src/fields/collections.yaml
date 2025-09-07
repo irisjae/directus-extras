@@ -67,6 +67,12 @@ fields:
       label: $t:singleton_label
     width: half
 
+  # WIP
+  - field: kind
+    interface: input
+    readonly: true
+    width: half
+
   - field: translations
     special:
       - cast-json
