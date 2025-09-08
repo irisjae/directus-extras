@@ -16,6 +16,7 @@ const props = withDefaults(
 		collection: string;
 		multiple?: boolean;
 		filter?: Filter;
+		showFilter?: boolean;
 		drawerProps?: VDrawerProps;
 	}>(),
 	{
@@ -168,7 +169,7 @@ function useActions() {
 			<template #actions:prepend><component :is="`layout-actions-${localLayout}`" v-bind="layoutState" /></template>
 
 			<template #actions>
-				<search-input v-model="search" v-model:filter="presetFilter" :collection="collection" />
+				<search-input v-model="search" v-model:filter="presetFilter" :show-filter="showFilter" :collection="collection" />
 
 				<v-button v-tooltip.bottom="t('save')" icon rounded @click="save">
 					<v-icon name="check" />

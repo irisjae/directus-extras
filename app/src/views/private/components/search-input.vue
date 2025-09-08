@@ -123,7 +123,7 @@ function emitValue() {
 </script>
 
 <template>
-	<v-badge bottom right class="search-badge" :value="activeFilterCount" :disabled="!activeFilterCount || filterActive">
+	<v-badge bottom right class="search-badge" :value="activeFilterCount" :disabled="!activeFilterCount || filterActive || !showFilter">
 		<div
 			v-click-outside="{
 				handler: disable,

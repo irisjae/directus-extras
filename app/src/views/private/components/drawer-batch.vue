@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
 	collection: string;
+	extraFieldOptions?: Record<string, Record<string, any>>;
 	primaryKeys: (number | string)[];
 	active?: boolean;
 	edits?: Record<string, any>;
@@ -137,6 +138,7 @@ function useActions() {
 			<v-form
 				v-model="internalEdits"
 				:collection="collection"
+				:extra-field-options="extraFieldOptions"
 				batch-mode
 				primary-key="+"
 				:validation-errors="validationErrors"

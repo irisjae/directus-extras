@@ -42,6 +42,7 @@ export interface OverlayItemProps {
 	popoverProps?: Record<string, any>;
 	applyShortcut?: ApplyShortcut;
 	preventCancelWithEdits?: boolean;
+	extraFieldOptions?: Record<string, Record<string, any>>;
 }
 
 export interface OverlayItemEmits {
@@ -234,6 +235,7 @@ const overlayItemContentProps = computed(() => {
 		junctionFieldLocation: props.junctionFieldLocation,
 		relatedCollectionFields: relatedCollectionFields.value,
 		relatedPrimaryKey: props.relatedPrimaryKey,
+		extraFieldOptions: props.extraFieldOptions,
 		refresh,
 	};
 });

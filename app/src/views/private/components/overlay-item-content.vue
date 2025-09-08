@@ -19,6 +19,7 @@ const {
 	junctionField: string | null;
 	relatedCollection: string | null;
 	initialValues: Record<string, any> | null;
+	extraFieldOptions?: Record<string, Record<string, any>>;
 	fields: Field[];
 	disabled: boolean;
 	loading: boolean;
@@ -125,6 +126,7 @@ function useValidationScrollToField() {
 				:autofocus="swapFormOrder"
 				:show-divider="swapFormOrder && hasVisibleFieldsRelated"
 				:primary-key="primaryKey"
+				:extra-field-options="extraFieldOptions"
 				:fields="fields"
 			/>
 		</div>

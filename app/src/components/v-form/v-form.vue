@@ -7,7 +7,7 @@ import { pushGroupOptionsDown } from '@/utils/push-group-options-down';
 import { useElementSize } from '@directus/composables';
 import { ContentVersion, Field, ValidationError } from '@directus/types';
 import { assign, cloneDeep, isEqual, isEmpty, isNil, omit } from 'lodash';
-import { computed, onBeforeUpdate, provide, ref, watch } from 'vue';
+import { computed, onBeforeUpdate, provide, toRef, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { MenuOptions } from './form-field-menu.vue';
 import FormField from './form-field.vue';
@@ -25,6 +25,7 @@ const props = withDefaults(
 	defineProps<{
 		collection?: string;
 		fields?: Field[];
+		extraFieldOptions?: Record<string, Record<string, any>>;
 		initialValues?: FieldValues | null;
 		modelValue?: FieldValues | null;
 		loading?: boolean;
@@ -134,6 +135,9 @@ watch(
 
 provide('values', values);
 
+const disabledRef = toRef(props, 'disabled');
+const primaryKeyRef = toRef(props, 'primaryKey');
+
 function useForm() {
 	const fieldsStore = useFieldsStore();
 	const fields = ref<Field[]>(getFields());
@@ -164,7 +168,17 @@ function useForm() {
 		updateSystemDivider(fields);
 		updateFieldWidths(fields);
 
-		return fields;
+		return fields.map((field) => ({
+			...field,
+			meta: {
+				...(field.meta ?? {}),
+				hidden: !!field.meta?.hidden || (!disabledRef.value && field.meta?.viewonly) || (primaryKeyRef.value === '+' && field.meta?.hide_on_create),
+				options: {
+					...field.meta?.options,
+					...(props.extraFieldOptions && field.field in props.extraFieldOptions ? props.extraFieldOptions[field.field] : {}),
+				},
+			},
+		}));
 	});
 
 	const fieldsMap = computed<Record<string, TFormField | undefined>>(() => {
@@ -366,7 +380,7 @@ function useRawEditor() {
 			<template v-if="fieldsMap[fieldName]">
 				<component
 					:is="`interface-${fieldsMap[fieldName]!.meta?.interface || 'group-standard'}`"
-					v-if="fieldsMap[fieldName]!.meta?.special?.includes('group') && !fieldsMap[fieldName]!.meta?.hidden && (disabled || !fieldsMap[fieldName]!.meta?.viewonly)"
+					v-if="fieldsMap[fieldName]!.meta?.special?.includes('group') && !fieldsMap[fieldName]!.meta?.hidden"
 					:ref="
 						(el: Element) => {
 							formFieldEls[fieldName] = el;
@@ -394,7 +408,7 @@ function useRawEditor() {
 				/>
 
 				<form-field
-					v-else-if="!fieldsMap[fieldName]!.meta?.hidden && (disabled || !fieldsMap[fieldName]!.meta?.viewonly)"
+					v-else-if="!fieldsMap[fieldName]!.meta?.hidden"
 					:ref="
 						(el) => {
 							formFieldEls[fieldName] = el;

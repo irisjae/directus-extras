@@ -46,7 +46,9 @@ const props = withDefaults(
 		disabled?: boolean;
 		enableCreate?: boolean;
 		enableSelect?: boolean;
+		fieldFilters?: Record<string, any>;
 		filter?: Filter | null;
+		showFilter?: boolean;
 		enableSearchFilter?: boolean;
 		enableLink?: boolean;
 		limit?: number;
@@ -385,6 +387,32 @@ function stageBatchEdits(edits: Record<string, any>) {
 
 const values = inject('values', ref<Record<string, any>>({}));
 
+const extraFieldOptions = computed(() => {
+	if (props.fieldFilters) {
+		return Object.fromEntries(
+			Object.entries(props.fieldFilters).map(([field, filter]) => 
+				[
+					field,
+					{ 
+						filter: parseFilter(
+							deepMap(filter, (val: any) => {
+								if (val && typeof val === 'string') {
+									return render(val, values.value);
+								}
+
+								return val;
+							}),
+						),
+						showFilter: false,
+					}
+				]
+			)
+		);
+	} else {
+		return props.fieldFilters;
+	}
+});
+
 const customFilter = computed(() => {
 	const filter: Filter = {
 		_and: [],
@@ -467,7 +495,7 @@ function getLinkForItem(item: DisplayItem) {
 					{{ showingCount }}
 				</div>
 
-				<div v-if="enableSearchFilter && (totalItemCount > 10 || search || searchFilter)" class="search">
+				<div v-if="enableSearchFilter" class="search">
 					<search-input
 						v-model="search"
 						v-model:filter="searchFilter"
@@ -675,6 +703,7 @@ function getLinkForItem(item: DisplayItem) {
 			:primary-key="currentlyEditing || '+'"
 			:edits="editsAtStart"
 			:circular-field="relationInfo.reverseJunctionField.field"
+			:extra-field-options="extraFieldOptions"
 			@input="stageEdits"
 			@update:active="cancelEdit"
 		/>
@@ -684,6 +713,7 @@ function getLinkForItem(item: DisplayItem) {
 			v-model:active="selectModalActive"
 			:collection="relationInfo.relatedCollection.collection"
 			:filter="customFilter"
+			:show-filter="showFilter"
 			multiple
 			@input="select"
 		/>
@@ -692,6 +722,7 @@ function getLinkForItem(item: DisplayItem) {
 			v-model:active="batchEditActive"
 			:primary-keys="selectedKeys"
 			:collection="relationInfo.relatedCollection.collection"
+			:extra-field-options="extraFieldOptions"
 			stage-on-save
 			@input="stageBatchEdits"
 		/>

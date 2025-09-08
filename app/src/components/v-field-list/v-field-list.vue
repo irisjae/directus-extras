@@ -21,6 +21,7 @@ const props = withDefaults(
 		includeRelations?: boolean;
 		injectVersionField?: boolean;
 		relationalFieldSelectable?: boolean;
+		relationalOnly?: boolean;
 		allowSelectAll?: boolean;
 		rawFieldNames?: boolean;
 	}>(),
@@ -79,12 +80,20 @@ watch(search, () => debouncedRefresh());
 const selectAllDisabled = computed(() => unref(treeList).every((field) => field.disabled === true));
 
 const treeList = computed(() => {
-	const list = treeListOriginal.value.map(setDisabled);
+	const list = treeListOriginal.value.filter(isInterested).map(setDisabled);
 
 	if (props.field) return list.filter((fieldNode) => fieldNode.field === props.field);
 
 	return list;
 
+	function isInterested(
+		field: (typeof treeListOriginal.value)[number],
+	): boolean {
+		if (!props.relationalOnly) {
+			return true;
+		}
+		return !!field.relatedCollection;
+	}
 	function setDisabled(
 		field: (typeof treeListOriginal.value)[number],
 	): (typeof treeListOriginal.value)[number] & { disabled: boolean } {

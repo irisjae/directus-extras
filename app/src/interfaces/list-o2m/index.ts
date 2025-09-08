@@ -26,7 +26,7 @@ export default defineInterface({
 		const fields = fieldsStore.getFieldsForCollection(collection);
 		
 		const pivotTemplateOptions: () => DeepPartial<Field>[] = () => {
-			if (! options.pivotField) {
+			if (!options.pivotField) {
 				return [];
 			}
 
@@ -81,6 +81,17 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'fields',
+				name: '$t:columns',
+				meta: {
+					interface: 'system-fields',
+					options: {
+						collectionName: collection,
+					},
+					width: 'full',
+				},
+			},
+			{
 				field: 'pivotField',
 				name: '$t:pivot_field',
 				meta: {
@@ -103,6 +114,9 @@ export default defineInterface({
 			{
 				field: 'virtualPivotField',
 				name: '$t:virtual_pivot_field',
+				schema: {
+					default_value: false,
+				},
 				meta: {
 					interface: 'boolean',
 					width: 'half',
@@ -111,6 +125,9 @@ export default defineInterface({
 			{
 				field: 'virtualPivotTable',
 				name: '$t:virtual_pivot_table',
+				schema: {
+					default_value: false,
+				},
 				meta: {
 					interface: 'boolean',
 					width: 'half',
@@ -126,17 +143,6 @@ export default defineInterface({
 					interface: 'boolean',
 					width: 'full',
 					label: '$t:list_export_label',
-				},
-			},
-			{
-				field: 'fields',
-				name: '$t:columns',
-				meta: {
-					interface: 'system-fields',
-					options: {
-						collectionName: collection,
-					},
-					width: 'full',
 				},
 			},
 		];
@@ -206,6 +212,27 @@ export default defineInterface({
 						label: '$t:enable_select_button',
 					},
 					width: 'half',
+				},
+			},
+			{
+				field: 'fieldFilters',
+				name: '$t:field_filters',
+				type: 'json',
+				meta: {
+					interface: 'field-filters',
+					options: {
+						collectionName: collection,
+					},
+					conditions: [
+						{
+							rule: {
+								enableCreate: {
+									_eq: false,
+								},
+							},
+							hidden: true,
+						},
+					],
 				},
 			},
 			{

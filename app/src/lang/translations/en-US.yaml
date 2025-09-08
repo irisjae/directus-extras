@@ -928,6 +928,7 @@ virtual_pivot_field: Virtual Pivot Field
 virtual_pivot_table: Virtual Pivot Table
 list_export: Allow Export
 columns: Columns
+field_filters: Field Filters
 collection_setup: Collection Setup
 optional_system_fields: Optional Fields
 value_unique: Value has to be unique
@@ -1784,6 +1785,10 @@ delete_item: Delete Item
 pause: Pause
 resume: Resume
 interfaces:
+  field-filters:
+    field_filters: Field Filters
+    description: Configure filters for fields.
+    no_fields: No fields
   list-m2a:
     prefix_note: Uses the related item's collection name by default.
     sorting_disabled: Sorting is disabled because there are more items than can fit on one page.

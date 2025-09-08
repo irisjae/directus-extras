@@ -12,6 +12,7 @@ const props = withDefaults(
 		typeAllowList?: string[];
 		disabled?: boolean;
 		placeholder?: string;
+		relationalOnly?: boolean;
 		allowNone?: boolean;
 		allowPrimaryKey?: boolean;
 		allowForeignKeys?: boolean;
@@ -47,7 +48,14 @@ watch(collection, (newCol, oldCol) => {
 });
 
 const selectItems = computed(() =>
-	fields.value.map((field: Field) => {
+	fields.value.filter((field: Field) => {
+		if (!props.relationalOnly) {
+			return true;
+		}
+
+		const special = field.meta?.special ?? [];
+		return special.includes('m2o') || special.includes('o2m') || special.includes('file');
+	}).map((field: Field) => {
 		let disabled = false;
 
 		if (props.allowPrimaryKey === false && field?.schema?.is_primary_key === true) disabled = true;
