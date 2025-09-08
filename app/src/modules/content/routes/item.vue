@@ -238,9 +238,9 @@ const internalPrimaryKey = computed(() => {
 });
 
 const disabledOptions = computed(() => {
-	if (!createAllowed.value) return ['save-and-add-new', 'save-as-copy'];
-	if (isNew.value) return ['save-as-copy'];
-	return [];
+	if (!createAllowed.value) return ['save-and-stay', 'save-and-add-new', 'save-as-copy'];
+	if (isNew.value) return ['save-and-stay', 'save-as-copy'];
+	return ['save-and-stay'];
 });
 
 watch(currentVersion, () => {
@@ -483,6 +483,11 @@ function discardAndStay() {
 	confirmLeave.value = false;
 }
 
+function discardAndLeaveEdit() {
+	discardAndStay();
+	leaveEdit();
+}
+
 function revert(values: Record<string, any>) {
 	edits.value = {
 		...edits.value,
@@ -550,7 +555,7 @@ const shouldShowVersioning = computed(
 				icon
 				secondary
 				exact
-				@click="leaveEdit"
+				@click="discardAndLeaveEdit"
 			>
 				<v-icon name="arrow_back" />
 			</v-button>
@@ -698,7 +703,7 @@ const shouldShowVersioning = computed(
 				:tooltip="saveAllowed ? t('save') : t('not_allowed')"
 				:loading="saving"
 				:disabled="!isSavable"
-				@click="saveAndQuit"
+				@click="saveAndStay"
 			>
 				<v-icon name="check" />
 
@@ -706,7 +711,6 @@ const shouldShowVersioning = computed(
 					<save-options
 						v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true"
 						:disabled-options="disabledOptions"
-						@save-and-stay="saveAndStay"
 						@save-and-add-new="saveAndAddNew"
 						@save-as-copy="saveAsCopyAndNavigate"
 						@discard-and-stay="discardAndStay"
