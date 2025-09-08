@@ -32,22 +32,16 @@ type TreeItem = Item | FinalGroupItem;
 function processFieldsTree(tree: TreeItem[]) {
 	for (const item of tree) {
 		if ('children' in item) {
-			const viewonly = item.field.meta?.viewonly;
 			const readonly = item.field.meta?.readonly;
 			const required = item.field.meta?.required;
 
 			item.field.meta ??= {} as FieldMeta;
 
-			item.field.meta.viewonly = false;
 			item.field.meta.readonly = false;
 			item.field.meta.required = false;
 
 			for (const child of item.children) {
 				child.field.meta ??= {} as FieldMeta;
-
-				if (viewonly) {
-					child.field.meta.viewonly = true;
-				}
 
 				if (readonly) {
 					child.field.meta.readonly = true;

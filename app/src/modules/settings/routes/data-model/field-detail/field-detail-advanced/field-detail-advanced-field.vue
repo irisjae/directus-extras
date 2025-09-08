@@ -10,6 +10,7 @@ const fieldDetailStore = useFieldDetailStore();
 const viewonly = syncFieldDetailStoreProperty('field.meta.viewonly', false);
 const readonly = syncFieldDetailStoreProperty('field.meta.readonly', false);
 const hidden = syncFieldDetailStoreProperty('field.meta.hidden', false);
+const hide_on_create = syncFieldDetailStoreProperty('field.meta.hide_on_create', false);
 const required = syncFieldDetailStoreProperty('field.meta.required', false);
 const note = syncFieldDetailStoreProperty('field.meta.note');
 const translations = syncFieldDetailStoreProperty('field.meta.translations');
@@ -40,6 +41,11 @@ const isGenerated = computed(() => field.value.schema?.is_generated);
 		</div>
 
 		<div class="field half-right">
+			<div class="label type-label">{{ t('hide_on_create') }}</div>
+			<v-checkbox v-model="hide_on_create" :label="t('hide_on_create_field_label')" block />
+		</div>
+
+		<div class="field half-left">
 			<div class="label type-label">{{ t('viewonly') }}</div>
 			<v-checkbox v-model="viewonly" :label="t('viewonly_field_label')" block />
 		</div>

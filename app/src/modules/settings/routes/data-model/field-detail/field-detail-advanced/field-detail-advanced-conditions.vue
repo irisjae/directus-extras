@@ -76,6 +76,18 @@ const repeaterFields = computed<DeepPartial<Field>[]>(() => [
 		},
 	},
 	{
+		field: 'hide_on_create',
+		name: t('hide_on_create'),
+		type: 'boolean',
+		meta: {
+			interface: 'boolean',
+			options: {
+				label: t('hide_on_create_detail'),
+			},
+			width: 'half',
+		},
+	},
+	{
 		field: 'viewonly',
 		name: t('viewonly'),
 		type: 'boolean',

@@ -57,6 +57,7 @@ export type FieldMetaConditionType = {
 	hidden: boolean;
 	name: string;
 	options: FieldMetaConditionOptionType;
+	hide_on_create?: boolean;
 	viewonly: boolean;
 	readonly: boolean;
 	required: boolean;

@@ -32,6 +32,7 @@ export function applyConditions(item: Record<string, any>, field: Field, version
 						readonly: matchingCondition.readonly,
 						options: matchingCondition.options,
 						hidden: matchingCondition.hidden,
+						hide_on_create: matchingCondition.hide_on_create,
 						required: matchingCondition.required,
 					},
 					(objValue, srcValue) => {
