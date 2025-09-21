@@ -60,7 +60,7 @@ const duplicable = computed(() => localType.value === 'standard' && isPrimaryKey
 
 			<v-list-item
 				clickable
-				:disabled="field.meta?.width === 'half' || localType === 'group'"
+				:disabled="field.meta?.width === 'half'"
 				@click="$emit('setWidth', 'half')"
 			>
 				<v-list-item-icon><v-icon name="border_vertical" /></v-list-item-icon>
@@ -69,7 +69,7 @@ const duplicable = computed(() => localType.value === 'standard' && isPrimaryKey
 
 			<v-list-item
 				clickable
-				:disabled="field.meta?.width === 'full' || localType === 'group'"
+				:disabled="field.meta?.width === 'full'"
 				@click="$emit('setWidth', 'full')"
 			>
 				<v-list-item-icon><v-icon name="border_right" /></v-list-item-icon>
@@ -78,7 +78,7 @@ const duplicable = computed(() => localType.value === 'standard' && isPrimaryKey
 
 			<v-list-item
 				clickable
-				:disabled="field.meta?.width === 'fill' || localType === 'group'"
+				:disabled="field.meta?.width === 'fill'"
 				@click="$emit('setWidth', 'fill')"
 			>
 				<v-list-item-icon><v-icon name="aspect_ratio" /></v-list-item-icon>
