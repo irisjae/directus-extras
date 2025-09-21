@@ -20,7 +20,7 @@ export default defineInterface({
 		const fieldsStore = useFieldsStore();
 		const relationsStore = useRelationsStore();
 
-		const collection = relations.o2m?.collection;
+		const collection = relations.o2m!.collection;
 		const options = meta?.options ?? {};
 
 		const fields = fieldsStore.getFieldsForCollection(collection);
