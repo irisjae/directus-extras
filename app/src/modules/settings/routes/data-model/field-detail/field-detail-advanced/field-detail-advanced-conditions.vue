@@ -64,6 +64,18 @@ const repeaterFields = computed<DeepPartial<Field>[]>(() => [
 		},
 	},
 	{
+		field: 'readonly_after_creation',
+		name: t('readonly_after_creation'),
+		type: 'boolean',
+		meta: {
+			interface: 'boolean',
+			options: {
+				label: t('readonly_after_creation_field_label'),
+			},
+			width: 'half',
+		},
+	},
+	{
 		field: 'hidden',
 		name: t('hidden'),
 		type: 'boolean',
@@ -88,13 +100,37 @@ const repeaterFields = computed<DeepPartial<Field>[]>(() => [
 		},
 	},
 	{
-		field: 'viewonly',
-		name: t('viewonly'),
+		field: 'hide_after_create',
+		name: t('hide_after_create'),
 		type: 'boolean',
 		meta: {
 			interface: 'boolean',
 			options: {
-				label: t('viewonly_field_label'),
+				label: t('hide_after_create_detail'),
+			},
+			width: 'half',
+		},
+	},
+	{
+		field: 'hide_on_edit',
+		name: t('hide_on_edit'),
+		type: 'boolean',
+		meta: {
+			interface: 'boolean',
+			options: {
+				label: t('hide_on_edit_field_label'),
+			},
+			width: 'half',
+		},
+	},
+	{
+		field: 'hide_on_view',
+		name: t('hide_on_view'),
+		type: 'boolean',
+		meta: {
+			interface: 'boolean',
+			options: {
+				label: t('hide_on_view_field_label'),
 			},
 			width: 'half',
 		},

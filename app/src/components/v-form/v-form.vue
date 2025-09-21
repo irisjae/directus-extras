@@ -172,7 +172,8 @@ function useForm() {
 			...field,
 			meta: {
 				...(field.meta ?? {}),
-				hidden: !!field.meta?.hidden || (!disabledRef.value && field.meta?.viewonly) || (primaryKeyRef.value === '+' && field.meta?.hide_on_create),
+				hidden: !!field.meta?.hidden || (!disabledRef.value && field.meta?.hide_on_edit) || (disabledRef.value && field.meta?.hide_on_view) || (primaryKeyRef.value === '+' && field.meta?.hide_on_create) || (primaryKeyRef.value !== '+' && field.meta?.hide_after_create),
+				readonly: !!field.meta?.readonly || (primaryKeyRef.value !== '+' && !!field.meta?.readonly_after_create),
 				options: {
 					...field.meta?.options,
 					...(props.extraFieldOptions && field.field in props.extraFieldOptions ? props.extraFieldOptions[field.field] : {}),

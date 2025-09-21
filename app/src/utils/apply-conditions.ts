@@ -28,11 +28,14 @@ export function applyConditions(item: Record<string, any>, field: Field, version
 					{},
 					field.meta || {},
 					{
-						viewonly: matchingCondition.viewonly,
+						hide_on_edit: matchingCondition.hide_on_edit,
+						hide_on_view: matchingCondition.hide_on_view,
 						readonly: matchingCondition.readonly,
+						readonly_after_creation: matchingCondition.readonly_after_creation,
 						options: matchingCondition.options,
 						hidden: matchingCondition.hidden,
 						hide_on_create: matchingCondition.hide_on_create,
+						hide_after_create: matchingCondition.hide_after_create,
 						required: matchingCondition.required,
 					},
 					(objValue, srcValue) => {

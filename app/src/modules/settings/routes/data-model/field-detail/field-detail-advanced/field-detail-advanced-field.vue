@@ -7,10 +7,13 @@ import { getCurrentLanguage } from '@/lang/get-current-language';
 
 const { t } = useI18n();
 const fieldDetailStore = useFieldDetailStore();
-const viewonly = syncFieldDetailStoreProperty('field.meta.viewonly', false);
+const hide_on_edit = syncFieldDetailStoreProperty('field.meta.hide_on_edit', false);
+const hide_on_view = syncFieldDetailStoreProperty('field.meta.hide_on_view', false);
 const readonly = syncFieldDetailStoreProperty('field.meta.readonly', false);
+const readonly_after_creation = syncFieldDetailStoreProperty('field.meta.readonly_after_creation', false);
 const hidden = syncFieldDetailStoreProperty('field.meta.hidden', false);
 const hide_on_create = syncFieldDetailStoreProperty('field.meta.hide_on_create', false);
+const hide_after_create = syncFieldDetailStoreProperty('field.meta.hide_after_create', false);
 const required = syncFieldDetailStoreProperty('field.meta.required', false);
 const note = syncFieldDetailStoreProperty('field.meta.note');
 const translations = syncFieldDetailStoreProperty('field.meta.translations');
@@ -26,7 +29,12 @@ const isGenerated = computed(() => field.value.schema?.is_generated);
 			<v-checkbox v-model="readonly" :label="t('readonly_field_label')" block />
 		</div>
 
-		<div v-if="!isGenerated" class="field half-right">
+		<div class="field half-right">
+			<div class="label type-label">{{ t('readonly_after_creation') }}</div>
+			<v-checkbox v-model="readonly_after_creation" :label="t('readonly_after_creation_field_label')" block />
+		</div>
+
+		<div v-if="!isGenerated" class="field half-left">
 			<div class="label type-label">{{ t('required') }}</div>
 			<v-checkbox v-model="required" :label="t('require_value_to_be_set')" block />
 		</div>
@@ -35,19 +43,29 @@ const isGenerated = computed(() => field.value.schema?.is_generated);
 			{{ t('required_readonly_field_warning') }}
 		</v-notice>
 
-		<div class="field half-left">
+		<div class="field half-right">
 			<div class="label type-label">{{ t('hidden') }}</div>
 			<v-checkbox v-model="hidden" :label="t('hidden_on_detail')" block />
 		</div>
 
-		<div class="field half-right">
+		<div class="field half-left">
 			<div class="label type-label">{{ t('hide_on_create') }}</div>
 			<v-checkbox v-model="hide_on_create" :label="t('hide_on_create_field_label')" block />
 		</div>
+		
+		<div class="field half-right">
+			<div class="label type-label">{{ t('hide_after_create') }}</div>
+			<v-checkbox v-model="hide_after_create" :label="t('hide_after_create_field_label')" block />
+		</div>
 
 		<div class="field half-left">
-			<div class="label type-label">{{ t('viewonly') }}</div>
-			<v-checkbox v-model="viewonly" :label="t('viewonly_field_label')" block />
+			<div class="label type-label">{{ t('hide_on_edit') }}</div>
+			<v-checkbox v-model="hide_on_edit" :label="t('hide_on_edit_field_label')" block />
+		</div>
+
+		<div class="field half-right">
+			<div class="label type-label">{{ t('hide_on_view') }}</div>
+			<v-checkbox v-model="hide_on_view" :label="t('hide_on_view_field_label')" block />
 		</div>
 
 		<div v-if="type !== 'group'" class="field full">
