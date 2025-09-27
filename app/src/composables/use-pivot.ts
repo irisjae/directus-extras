@@ -38,7 +38,7 @@ export function usePivot(
 			const fields = [
 				pivotField,
 				... (pivotTemplate ?
-					[ `${pivotField}.id` ] // WIP -- get id field
+					[ `${pivotField}.id` ] // SOON -- get id field
 				: []),
 				... (pivotTemplate ?
 					adjustFieldsForDisplays(

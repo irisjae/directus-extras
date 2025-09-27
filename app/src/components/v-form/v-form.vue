@@ -393,6 +393,8 @@ function useRawEditor() {
 					]"
 					:field="fieldsMap[fieldName]"
 					:fields="fieldsForGroup[index] || []"
+					:fieldNames="fieldNames"
+					:fieldsForGroup="fieldsForGroup"
 					:values="modelValue || {}"
 					:initial-values="initialValues || {}"
 					:disabled="disabled"

@@ -114,13 +114,15 @@ const fields = computed(() => {
 	return addRelatedPrimaryKeyToFields(relationInfo.value.relatedCollection.collection, displayFields);
 });
 
+const groupPivots = inject('groupPivots', {});
+const pivotHoisted = !!props.pivotField && (props.pivotField in groupPivots);
 const limit = ref(props.limit);
 const page = ref(1);
 const search = ref('');
 const searchFilter = ref<Filter>();
-const pivot = ref(null);
+const pivot = pivotHoisted ? groupPivots[props!.pivotField].pivot : ref(null);
 const pivotPlaceholder = props.pivotPlaceholder || 'Default';
-const { fetchedItems: pivots } = usePivot(primaryKey, relationInfo.value, props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
+const { fetchedItems: pivots } = usePivot(primaryKey, relationInfo.value, pivotHoisted ? null : props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
 
 const pivotItems = computed(() => {
 	return [
@@ -482,7 +484,7 @@ function getLinkForItem(item: DisplayItem) {
 		<div>
 			<div v-if="layout === LAYOUTS.TABLE" class="actions top" :class="width">
 				<v-select
-					v-if="pivotField !== null"
+					v-if="pivotField !== null && !pivotHoisted"
 					v-model="pivot"
 					:fullWidth="false"
 					:items="pivotItems"
@@ -730,10 +732,8 @@ function getLinkForItem(item: DisplayItem) {
 </template>
 
 <style lang="scss">
-.actions {
-	.pivot-select > .v-menu-activator > .v-input {
-		min-width: 200px;
-	}
+.pivot-select > .v-menu-activator > .v-input {
+	min-width: 200px;
 }
 .one-to-many {
 	.render-template {

@@ -2144,6 +2144,9 @@ interfaces:
     header_color: Header Color
     start_open: Start Open
     start_closed: Start Closed
+  group-pivot:
+    name: Pivot Group
+    description: Render fields with grouped m2o pivot fields
   system-token:
     system-token: Token
     description: Manage static access token
