@@ -611,6 +611,14 @@ function getLinkForItem(item: DisplayItem) {
 			</template>
 
 			<template v-else>
+				<v-select
+					v-if="pivotField !== null && !pivotHoisted"
+					v-model="pivot"
+					:fullWidth="false"
+					:items="pivotItems"
+					class="pivot-select"
+				/>
+				
 				<v-notice v-if="displayItems.length === 0">
 					{{ t('no_items') }}
 				</v-notice>
