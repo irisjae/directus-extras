@@ -21,6 +21,7 @@ export type CollectionOverview = {
 	collection: string;
 	primary: string;
 	singleton: boolean;
+	readOnly: boolean;
 	sortField: string | null;
 	nameField: string | null;
 	kind: string | null;

@@ -67,6 +67,14 @@ fields:
       label: $t:singleton_label
     width: half
 
+  - field: read_only
+    special:
+      - cast-boolean
+    interface: boolean
+    options:
+      label: $t:read_only_label
+    width: half
+
   # WIP
   - field: kind
     interface: input

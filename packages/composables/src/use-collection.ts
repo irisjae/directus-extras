@@ -12,6 +12,7 @@ export type UsableCollection = {
 	sortField: ComputedRef<string | null>;
 	nameField: ComputedRef<string | null>;
 	isSingleton: ComputedRef<boolean>;
+	isReadonly: ComputedRef<boolean>;
 	accountabilityScope: ComputedRef<'all' | 'activity' | null>;
 };
 
@@ -70,11 +71,15 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value?.meta?.singleton === true;
 	});
 
+	const isReadonly = computed(() => {
+		return info.value?.meta?.read_only === true;
+	});
+
 	const accountabilityScope = computed(() => {
 		if (!info.value) return null;
 		if (!info.value.meta) return null;
 		return info.value.meta.accountability;
 	});
 
-	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, isSingleton, accountabilityScope };
+	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, isSingleton, isReadonly, accountabilityScope };
 }

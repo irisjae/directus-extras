@@ -703,7 +703,7 @@ export class CollectionsService {
 					// only process duplication fields if related collections have them
 					if (collectionRelationList.size !== 0) {
 						const collectionMetas = await trx
-							.select('collection', 'archive_field', 'sort_field', 'name_field', 'kind', 'item_duplication_fields')
+							.select('collection', 'read_only', 'archive_field', 'sort_field', 'name_field', 'kind', 'item_duplication_fields')
 							.from('directus_collections')
 							.whereIn('collection', Array.from(collectionRelationList))
 							.whereNotNull('item_duplication_fields');

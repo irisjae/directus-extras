@@ -12,6 +12,7 @@ export type DirectusCollection<Schema = any> = {
 			display_template: string | null;
 			hidden: boolean;
 			singleton: boolean;
+			read_only: boolean;
 			translations: CollectionMetaTranslationType[] | null;
 			archive_field: string | null;
 			archive_app_filter: boolean;

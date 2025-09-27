@@ -7,6 +7,7 @@ export function getCollectionMetaUpdates(
 	field: string,
 	collectionMetas: {
 		archive_field?: null | string;
+		read_only?: null | boolean;
 		sort_field?: null | string;
 		name_field?: null | string;
 		kind?: null | string;

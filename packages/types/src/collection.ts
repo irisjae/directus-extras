@@ -12,6 +12,7 @@ export type CollectionMeta = {
 	note: string | null;
 	hidden: boolean;
 	singleton: boolean;
+	read_only: boolean;
 	icon: string | null;
 	color: string | null;
 	translations: Translations[] | null;

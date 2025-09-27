@@ -43,7 +43,7 @@ const { collection } = toRefs(props);
 const bookmarkID = computed(() => (props.bookmark ? +props.bookmark : null));
 
 const { selection } = useSelection();
-const { info: currentCollection } = useCollection(collection);
+const { info: currentCollection, isReadonly } = useCollection(collection);
 const { addNewLink, currentCollectionLink } = useLinks();
 const { breadcrumb } = useBreadcrumb();
 
@@ -373,94 +373,96 @@ function clearFilters() {
 			<template #actions>
 				<search-input v-model="search" v-model:filter="filter" :collection="collection" />
 
-				<v-dialog v-if="selection.length > 0" v-model="confirmDelete" @esc="confirmDelete = false" @apply="batchDelete">
-					<template #activator="{ on }">
-						<v-button
-							v-tooltip.bottom="batchDeleteAllowed ? t('delete_label') : t('not_allowed')"
-							:disabled="batchDeleteAllowed !== true"
-							rounded
-							icon
-							class="action-delete"
-							secondary
-							@click="on"
-						>
-							<v-icon name="delete" outline />
-						</v-button>
-					</template>
-
-					<v-card>
-						<v-card-title>{{ t('batch_delete_confirm', selection.length) }}</v-card-title>
-
-						<v-card-actions>
-							<v-button secondary @click="confirmDelete = false">
-								{{ t('cancel') }}
+				<template v-if="!isReadonly">
+					<v-dialog v-if="selection.length > 0" v-model="confirmDelete" @esc="confirmDelete = false" @apply="batchDelete">
+						<template #activator="{ on }">
+							<v-button
+								v-tooltip.bottom="batchDeleteAllowed ? t('delete_label') : t('not_allowed')"
+								:disabled="batchDeleteAllowed !== true"
+								rounded
+								icon
+								class="action-delete"
+								secondary
+								@click="on"
+							>
+								<v-icon name="delete" outline />
 							</v-button>
-							<v-button kind="danger" :loading="deleting" @click="batchDelete">
-								{{ t('delete_label') }}
+						</template>
+
+						<v-card>
+							<v-card-title>{{ t('batch_delete_confirm', selection.length) }}</v-card-title>
+
+							<v-card-actions>
+								<v-button secondary @click="confirmDelete = false">
+									{{ t('cancel') }}
+								</v-button>
+								<v-button kind="danger" :loading="deleting" @click="batchDelete">
+									{{ t('delete_label') }}
+								</v-button>
+							</v-card-actions>
+						</v-card>
+					</v-dialog>
+
+					<v-dialog
+						v-if="
+							selection.length > 0 &&
+							currentCollection.meta &&
+							currentCollection.meta.archive_field &&
+							archive !== 'archived'
+						"
+						v-model="confirmArchive"
+						@esc="confirmArchive = false"
+						@apply="archiveItems"
+					>
+						<template #activator="{ on }">
+							<v-button
+								v-tooltip.bottom="batchArchiveAllowed ? t('archive') : t('not_allowed')"
+								:disabled="batchArchiveAllowed !== true"
+								rounded
+								icon
+								secondary
+								@click="on"
+							>
+								<v-icon name="archive" outline />
 							</v-button>
-						</v-card-actions>
-					</v-card>
-				</v-dialog>
+						</template>
 
-				<v-dialog
-					v-if="
-						selection.length > 0 &&
-						currentCollection.meta &&
-						currentCollection.meta.archive_field &&
-						archive !== 'archived'
-					"
-					v-model="confirmArchive"
-					@esc="confirmArchive = false"
-					@apply="archiveItems"
-				>
-					<template #activator="{ on }">
-						<v-button
-							v-tooltip.bottom="batchArchiveAllowed ? t('archive') : t('not_allowed')"
-							:disabled="batchArchiveAllowed !== true"
-							rounded
-							icon
-							secondary
-							@click="on"
-						>
-							<v-icon name="archive" outline />
-						</v-button>
-					</template>
+						<v-card>
+							<v-card-title>{{ t('archive_confirm_count', selection.length) }}</v-card-title>
 
-					<v-card>
-						<v-card-title>{{ t('archive_confirm_count', selection.length) }}</v-card-title>
+							<v-card-actions>
+								<v-button secondary @click="confirmArchive = false">
+									{{ t('cancel') }}
+								</v-button>
+								<v-button kind="warning" :loading="archiving" @click="archiveItems">
+									{{ t('archive') }}
+								</v-button>
+							</v-card-actions>
+						</v-card>
+					</v-dialog>
 
-						<v-card-actions>
-							<v-button secondary @click="confirmArchive = false">
-								{{ t('cancel') }}
-							</v-button>
-							<v-button kind="warning" :loading="archiving" @click="archiveItems">
-								{{ t('archive') }}
-							</v-button>
-						</v-card-actions>
-					</v-card>
-				</v-dialog>
+					<v-button
+						v-if="selection.length > 0"
+						v-tooltip.bottom="batchEditAllowed ? t('edit') : t('not_allowed')"
+						rounded
+						icon
+						secondary
+						:disabled="batchEditAllowed === false"
+						@click="batchEditActive = true"
+					>
+						<v-icon name="edit" outline />
+					</v-button>
 
-				<v-button
-					v-if="selection.length > 0"
-					v-tooltip.bottom="batchEditAllowed ? t('edit') : t('not_allowed')"
-					rounded
-					icon
-					secondary
-					:disabled="batchEditAllowed === false"
-					@click="batchEditActive = true"
-				>
-					<v-icon name="edit" outline />
-				</v-button>
-
-				<v-button
-					v-tooltip.bottom="createAllowed ? t('create_item') : t('not_allowed')"
-					rounded
-					icon
-					:to="addNewLink"
-					:disabled="createAllowed === false"
-				>
-					<v-icon name="add" />
-				</v-button>
+					<v-button
+						v-tooltip.bottom="createAllowed ? t('create_item') : t('not_allowed')"
+						rounded
+						icon
+						:to="addNewLink"
+						:disabled="createAllowed === false"
+					>
+						<v-icon name="add" />
+					</v-button>
+				</template>
 			</template>
 
 			<template #navigation>

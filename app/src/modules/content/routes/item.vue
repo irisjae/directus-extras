@@ -47,7 +47,7 @@ const { breadcrumb } = useBreadcrumb();
 
 const revisionsDrawerDetailRef = ref<InstanceType<typeof RevisionsDrawerDetail> | null>(null);
 
-const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, accountabilityScope } = useCollection(collection);
+const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, isReadonly, accountabilityScope } = useCollection(collection);
 
 const {
 	readVersionsAllowed,
@@ -685,75 +685,77 @@ const shouldShowVersioning = computed(
 				</v-card>
 			</v-dialog>
 
-			<v-button
-				v-if="currentVersion === null && viewing"
-				rounded
-				icon
-				:tooltip="t('edit_item')"
-				:loading="false"
-				@click="edit"
-			>
-				<v-icon name="edit" />
-			</v-button>
-			
-			<v-button
-				v-else-if="currentVersion === null"
-				rounded
-				icon
-				:tooltip="saveAllowed ? t('save') : t('not_allowed')"
-				:loading="saving"
-				:disabled="!isSavable"
-				@click="saveAndStay"
-			>
-				<v-icon name="check" />
+			<template v-if="!isReadonly">
+				<v-button
+					v-if="currentVersion === null && viewing"
+					rounded
+					icon
+					:tooltip="t('edit_item')"
+					:loading="false"
+					@click="edit"
+				>
+					<v-icon name="edit" />
+				</v-button>
+				
+				<v-button
+					v-else-if="currentVersion === null"
+					rounded
+					icon
+					:tooltip="saveAllowed ? t('save') : t('not_allowed')"
+					:loading="saving"
+					:disabled="!isSavable"
+					@click="saveAndStay"
+				>
+					<v-icon name="check" />
 
-				<template #append-outer>
-					<save-options
-						v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true"
-						:disabled-options="disabledOptions"
-						@save-and-add-new="saveAndAddNew"
-						@save-as-copy="saveAsCopyAndNavigate"
-						@discard-and-stay="discardAndStay"
-					/>
-				</template>
-			</v-button>
-			
-			<v-button
-				v-else
-				rounded
-				icon
-				:tooltip="t('save_version')"
-				:loading="saveVersionLoading"
-				:disabled="!isSavable"
-				@click="saveVersionAction('stay')"
-			>
-				<v-icon name="beenhere" />
+					<template #append-outer>
+						<save-options
+							v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true"
+							:disabled-options="disabledOptions"
+							@save-and-add-new="saveAndAddNew"
+							@save-as-copy="saveAsCopyAndNavigate"
+							@discard-and-stay="discardAndStay"
+						/>
+					</template>
+				</v-button>
+				
+				<v-button
+					v-else
+					rounded
+					icon
+					:tooltip="t('save_version')"
+					:loading="saveVersionLoading"
+					:disabled="!isSavable"
+					@click="saveVersionAction('stay')"
+				>
+					<v-icon name="beenhere" />
 
-				<template #append-outer>
-					<v-menu v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true" show-arrow>
-						<template #activator="{ toggle }">
-							<v-icon class="version-more-options" name="more_vert" clickable @click="toggle" />
-						</template>
+					<template #append-outer>
+						<v-menu v-if="collectionInfo.meta && collectionInfo.meta.singleton !== true && isSavable === true" show-arrow>
+							<template #activator="{ toggle }">
+								<v-icon class="version-more-options" name="more_vert" clickable @click="toggle" />
+							</template>
 
-						<v-list>
-							<v-list-item clickable @click="saveVersionAction('main')">
-								<v-list-item-icon><v-icon name="check" /></v-list-item-icon>
-								<v-list-item-content>{{ t('save_and_return_to_main') }}</v-list-item-content>
-								<v-list-item-hint>{{ translateShortcut(['meta', 'alt', 's']) }}</v-list-item-hint>
-							</v-list-item>
-							<v-list-item clickable @click="saveVersionAction('quit')">
-								<v-list-item-icon><v-icon name="done_all" /></v-list-item-icon>
-								<v-list-item-content>{{ t('save_and_quit') }}</v-list-item-content>
-								<v-list-item-hint>{{ translateShortcut(['meta', 'shift', 's']) }}</v-list-item-hint>
-							</v-list-item>
-							<v-list-item clickable @click="discardAndStay">
-								<v-list-item-icon><v-icon name="undo" /></v-list-item-icon>
-								<v-list-item-content>{{ t('discard_all_changes') }}</v-list-item-content>
-							</v-list-item>
-						</v-list>
-					</v-menu>
-				</template>
-			</v-button>
+							<v-list>
+								<v-list-item clickable @click="saveVersionAction('main')">
+									<v-list-item-icon><v-icon name="check" /></v-list-item-icon>
+									<v-list-item-content>{{ t('save_and_return_to_main') }}</v-list-item-content>
+									<v-list-item-hint>{{ translateShortcut(['meta', 'alt', 's']) }}</v-list-item-hint>
+								</v-list-item>
+								<v-list-item clickable @click="saveVersionAction('quit')">
+									<v-list-item-icon><v-icon name="done_all" /></v-list-item-icon>
+									<v-list-item-content>{{ t('save_and_quit') }}</v-list-item-content>
+									<v-list-item-hint>{{ translateShortcut(['meta', 'shift', 's']) }}</v-list-item-hint>
+								</v-list-item>
+								<v-list-item clickable @click="discardAndStay">
+									<v-list-item-icon><v-icon name="undo" /></v-list-item-icon>
+									<v-list-item-content>{{ t('discard_all_changes') }}</v-list-item-content>
+								</v-list-item>
+							</v-list>
+						</v-menu>
+					</template>
+				</v-button>
+			</template>
 		</template>
 
 		<template #navigation>
