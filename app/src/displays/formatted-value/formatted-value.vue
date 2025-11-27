@@ -4,7 +4,7 @@ import formatTitle from '@directus/format-title';
 import dompurify from 'dompurify';
 import { decode } from 'html-entities';
 import { isNil } from 'lodash';
-import { computed } from 'vue';
+import { inject, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = withDefaults(
@@ -87,6 +87,8 @@ const computedStyle = computed(() => {
 	};
 });
 
+const nullText = inject('nullText', '--');
+
 const displayValue = computed(() => {
 	if (props.masked) return '**********';
 
@@ -98,7 +100,7 @@ const displayValue = computed(() => {
 	if (isNil(props.value) || props.value === '') return null;
 
 	let value = Array.isArray(props.value)
-		? props.value.map((v) => (isNil(v) || v === '' ? '--' : v)).join(', ')
+		? props.value.map((v) => (isNil(v) || v === '' ? nullText : v)).join(', ')
 		: String(props.value);
 
 	if (props.translate && value.startsWith('$t:')) {

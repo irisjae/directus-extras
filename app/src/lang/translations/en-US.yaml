@@ -927,6 +927,7 @@ interface_options: Interface Options
 display_options: Display Options
 layout_options: Layout Options
 rows: Rows
+null_text: Null Text
 pivot_field: Pivot Field
 pivot_field_template: Pivot Field Template
 pivot_placeholder: Empty Pivot Label

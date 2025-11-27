@@ -81,6 +81,14 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'nullText',
+				name: '$t:null_text',
+				meta: {
+					interface: 'input',
+					width: 'full',
+				},
+			},
+			{
 				field: 'fields',
 				name: '$t:columns',
 				meta: {

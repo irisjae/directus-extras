@@ -21,7 +21,7 @@ import { Filter } from '@directus/types';
 import { deepMap, getFieldsFromTemplate } from '@directus/utils';
 import { clamp, get, isEmpty, isNil } from 'lodash';
 import { render } from 'micromustache';
-import { computed, inject, ref, toRefs, watch } from 'vue';
+import { provide, computed, inject, ref, toRefs, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Draggable from 'vuedraggable';
 
@@ -34,6 +34,7 @@ const props = withDefaults(
 		width: string;
 		layout?: LAYOUTS;
 		tableSpacing?: 'compact' | 'cozy' | 'comfortable';
+		nullText?: string;
 		pivotField?: string;
 		pivotPlaceholder?: string;
 		pivotFieldTemplate?: string;
@@ -471,6 +472,11 @@ function getLinkForItem(item: DisplayItem) {
 
 	return null;
 }
+
+if (props.nullText !== undefined && props.nullText !== null) {
+	provide('nullText', props.nullText);
+}
+
 </script>
 
 <template>
