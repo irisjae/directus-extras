@@ -89,6 +89,17 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'virtualTable',
+				name: '$t:virtual_table',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					width: 'full',
+				},
+			},
+			{
 				field: 'fields',
 				name: '$t:columns',
 				meta: {
@@ -116,23 +127,12 @@ export default defineInterface({
 				name: '$t:pivot_placeholder',
 				meta: {
 					interface: 'input',
-					width: 'full',
+					width: 'half',
 				},
 			},
 			{
 				field: 'virtualPivotField',
 				name: '$t:virtual_pivot_field',
-				schema: {
-					default_value: false,
-				},
-				meta: {
-					interface: 'boolean',
-					width: 'half',
-				},
-			},
-			{
-				field: 'virtualPivotTable',
-				name: '$t:virtual_pivot_table',
 				schema: {
 					default_value: false,
 				},

@@ -35,11 +35,11 @@ const props = withDefaults(
 		layout?: LAYOUTS;
 		tableSpacing?: 'compact' | 'cozy' | 'comfortable';
 		nullText?: string;
+		virtualTable?: boolean;
 		pivotField?: string;
 		pivotPlaceholder?: string;
 		pivotFieldTemplate?: string;
 		virtualPivotField?: boolean;
-		virtualPivotTable?: boolean;
 		listExport?: boolean;
 		fields?: Array<string>;
 		fieldsMeta?: { [key: string]: any; };
@@ -60,10 +60,10 @@ const props = withDefaults(
 		value: () => [],
 		layout: LAYOUTS.LIST,
 		tableSpacing: 'cozy',
+		virtualTable: false,
 		pivotField: null,
 		pivotFieldTemplate: null,
 		virtualPivotField: false,
-		virtualPivotTable: false,
 		listExport: false,
 		fields: () => ['id'],
 		template: null,
@@ -183,7 +183,7 @@ const {
 	isItemSelected,
 	isLocalItem,
 	getItemEdits,
-} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, pivot, props.virtualPivotTable);
+} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, pivot);
 
 const { createAllowed, deleteAllowed, updateAllowed } = useRelationPermissionsO2M(relationInfo);
 

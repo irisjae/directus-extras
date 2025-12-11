@@ -43,14 +43,17 @@ export function getDBQuery(
 
 	queryCopy.limit = typeof queryCopy.limit === 'number' ? queryCopy.limit : Number(env['QUERY_LIMIT_DEFAULT']);
 
-	const virtual = (queryCopy as Record<string, any>)['meta']?.filter((meta: any) => typeof(meta) === 'object' && 'virtual' in meta)?.[0]?.virtual;
+	const metaList = (queryCopy as Record<string, any>)['meta'];
+	const virtual = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtual' in meta)?.[0]?.virtual;
+	const virtualKind = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtualKind' in meta)?.[0]?.virtualKind;
 
 	// Queries with aggregates and groupBy will not have duplicate result
 	if (queryCopy.aggregate || queryCopy.group) {
 		let flatQuery;
 		if (virtual) { 
 			const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
-			flatQuery = knex.fromRaw(`${table}(${bindingTemplates})`, virtual);
+			const virtualTable = `"${table}${virtualKind || ''}"`;
+			flatQuery = knex.fromRaw(`${virtualTable}(${bindingTemplates}) as ${table}`, virtual);
 		} else {
 			flatQuery = knex.from(table);
 		}

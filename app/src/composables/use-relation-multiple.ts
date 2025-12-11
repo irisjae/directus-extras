@@ -37,8 +37,8 @@ export function useRelationMultiple(
 	relation: Ref<RelationM2A | RelationM2M | RelationO2M | undefined>,
 	itemId: Ref<string | number | null>,
 	pivotField?: string,
+	virtualTable?: boolean,
 	pivot?: Ref<any>,
-	virtualPivotTable?: boolean,
 ) {
 	const loading = ref(false);
 	const fetchedItems = ref<Record<string, any>[]>([]);
@@ -365,18 +365,25 @@ export function useRelationMultiple(
 
 		if (relation.value.sortField) fields.add(relation.value.sortField);
 
-		const filterOptions = pivotField ? virtualPivotTable ? {
-			filter: { _and: [] },
-			meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
-		} : { 
-			filter: {
-				_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+		const filterOptions = virtualTable ? (
+			pivotField ? {
+				filter: { _and: [] },
+				meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
+			} : {
+				filter: { _and: [] },
+				meta: [{ virtual: [ itemId.value ] }]
 			}
-		} : { 
-			filter: {
-				_and: [{ [reverseJunctionField]: itemId.value }] 
+		) : (
+			pivotField ? { 
+				filter: {
+					_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+				}
+			} : { 
+				filter: {
+					_and: [{ [reverseJunctionField]: itemId.value }] 
+				}
 			}
-		};
+		);
 
 		if (previewQuery.value.filter) {
 			filterOptions.filter._and.push(previewQuery.value.filter);
@@ -464,18 +471,25 @@ export function useRelationMultiple(
 				break;
 		}
 
-		const filterOptions = pivotField ? virtualPivotTable ? {
-			filter: { _and: [] },
-			meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
-		} : { 
-			filter: {
-				_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+		const filterOptions = virtualTable ? (
+			pivotField ? {
+				filter: { _and: [] },
+				meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
+			} : {
+				filter: { _and: [] },
+				meta: [{ virtual: [ itemId.value ] }]
 			}
-		} : { 
-			filter: {
-				_and: [{ [reverseJunctionField]: itemId.value }] 
+		) : (
+			pivotField ? { 
+				filter: {
+					_and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] 
+				}
+			} : { 
+				filter: {
+					_and: [{ [reverseJunctionField]: itemId.value }] 
+				}
 			}
-		};
+		);
 
 		if (previewQuery.value.filter) {
 			filterOptions.filter._and.push(previewQuery.value.filter);

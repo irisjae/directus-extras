@@ -207,6 +207,9 @@ function sanitizePage(rawPage: any) {
 	return Number(rawPage);
 }
 
+function sanitizeVirtualValue(value: any) {
+	return typeof(value) === 'object' && value?._null ? null : value;
+}
 function sanitizeMeta(rawMeta: any) {
 	if (rawMeta === '*') {
 		return Object.values(Meta);
@@ -218,9 +221,10 @@ function sanitizeMeta(rawMeta: any) {
 
 	if (Array.isArray(rawMeta)) {
 		return rawMeta.map((meta) =>
-			typeof(meta) === 'object' && meta?.virtual ? ({ virtual: meta.virtual.map((virtual: any) =>
-				typeof(virtual) === 'object' && virtual?._null ? null : virtual
-			) }) : meta
+			typeof(meta) === 'object' ? ({
+				...(meta?.virtual ? { virtual: meta.virtual.map(sanitizeVirtualValue) } : {}),
+				...(meta?.virtualKind ? { virtualKind: meta.virtualKind } : {})
+			}) : meta
 		);
 	}
 

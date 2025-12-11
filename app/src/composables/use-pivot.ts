@@ -55,7 +55,7 @@ export function usePivot(
 					groupBy: [ pivotField ],
 					limit: -1,
 					... virtualPivotField ? {
-						meta: [{ virtual: [ itemId.value ] }]
+						meta: [{ virtual: [ itemId.value ], virtualKind: ':pivot' }]
 					} : { [reverseJunctionField.field]: itemId.value }
 				};
 				const response = await api.get(getEndpoint(relatedCollection.collection), {

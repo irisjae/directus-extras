@@ -928,11 +928,11 @@ display_options: Display Options
 layout_options: Layout Options
 rows: Rows
 null_text: Null Text
+virtual_table: Virtual Table
 pivot_field: Pivot Field
 pivot_field_template: Pivot Field Template
 pivot_placeholder: Empty Pivot Label
 virtual_pivot_field: Virtual Pivot Field
-virtual_pivot_table: Virtual Pivot Table
 list_export: Allow Export
 columns: Columns
 field_filters: Field Filters
