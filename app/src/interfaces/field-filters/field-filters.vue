@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useCollectionsStore } from '@/stores/collections';
 import { useFieldsStore } from '@/stores/fields';
+import { useRelationsStore } from '@/stores/relations';
 import { Field } from '@directus/types';
 import { sortBy } from 'lodash';
 import { computed } from 'vue';
@@ -13,7 +15,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['input']);
 
+const collectionsStore = useCollectionsStore();
 const fieldsStore = useFieldsStore();
+const relationsStore = useRelationsStore();
 
 const fields = computed(() => {
 	return fieldsStore.getFieldsForCollection(props.collectionName);
@@ -23,10 +27,13 @@ const listItems = computed(() =>
 	sortBy(
 		Object.entries(props.value ?? {}).map(([ fieldName, filter ]) => {
 			const field = fields.value.filter((field) => field.field === fieldName)[0];
+			const relations = relationsStore.getRelationsForField(field.collection, fieldName);
+			const relation = relations[0];
+			
 			return ({
 				field: fieldName,
 				displayName: field.name,
-				collection: field.schema.foreign_key_table,
+				collection: collectionsStore.getCollection(relation.related_collection).name,
 				filter: filter,
 			});
 		}) ?? [],
