@@ -500,7 +500,7 @@ function clearFilters() {
 					<v-info :title="t('item_count', 0)" :icon="currentCollection.icon" center>
 						{{ t('no_items_copy') }}
 
-						<template v-if="createAllowed" #append>
+						<template v-if="!isReadonly && createAllowed" #append>
 							<v-button :to="getItemRoute(collection, '+')">{{ t('create_item') }}</v-button>
 						</template>
 					</v-info>
