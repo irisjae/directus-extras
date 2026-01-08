@@ -10,7 +10,7 @@ const fieldDetailStore = useFieldDetailStore();
 const hide_on_edit = syncFieldDetailStoreProperty('field.meta.hide_on_edit', false);
 const hide_on_view = syncFieldDetailStoreProperty('field.meta.hide_on_view', false);
 const readonly = syncFieldDetailStoreProperty('field.meta.readonly', false);
-const readonly_after_creation = syncFieldDetailStoreProperty('field.meta.readonly_after_creation', false);
+const readonly_after_create = syncFieldDetailStoreProperty('field.meta.readonly_after_create', false);
 const hidden = syncFieldDetailStoreProperty('field.meta.hidden', false);
 const hide_on_create = syncFieldDetailStoreProperty('field.meta.hide_on_create', false);
 const hide_after_create = syncFieldDetailStoreProperty('field.meta.hide_after_create', false);
@@ -30,8 +30,8 @@ const isGenerated = computed(() => field.value.schema?.is_generated);
 		</div>
 
 		<div class="field half-right">
-			<div class="label type-label">{{ t('readonly_after_creation') }}</div>
-			<v-checkbox v-model="readonly_after_creation" :label="t('readonly_after_creation_field_label')" block />
+			<div class="label type-label">{{ t('readonly_after_create') }}</div>
+			<v-checkbox v-model="readonly_after_create" :label="t('readonly_after_create_field_label')" block />
 		</div>
 
 		<div v-if="!isGenerated" class="field half-left">

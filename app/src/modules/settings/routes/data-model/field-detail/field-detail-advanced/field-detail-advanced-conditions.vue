@@ -64,13 +64,13 @@ const repeaterFields = computed<DeepPartial<Field>[]>(() => [
 		},
 	},
 	{
-		field: 'readonly_after_creation',
-		name: t('readonly_after_creation'),
+		field: 'readonly_after_create',
+		name: t('readonly_after_create'),
 		type: 'boolean',
 		meta: {
 			interface: 'boolean',
 			options: {
-				label: t('readonly_after_creation_field_label'),
+				label: t('readonly_after_create_field_label'),
 			},
 			width: 'half',
 		},

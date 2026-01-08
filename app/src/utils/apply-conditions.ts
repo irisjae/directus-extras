@@ -31,7 +31,7 @@ export function applyConditions(item: Record<string, any>, field: Field, version
 						hide_on_edit: matchingCondition.hide_on_edit,
 						hide_on_view: matchingCondition.hide_on_view,
 						readonly: matchingCondition.readonly,
-						readonly_after_creation: matchingCondition.readonly_after_creation,
+						readonly_after_create: matchingCondition.readonly_after_create,
 						options: matchingCondition.options,
 						hidden: matchingCondition.hidden,
 						hide_on_create: matchingCondition.hide_on_create,

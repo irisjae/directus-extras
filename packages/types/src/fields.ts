@@ -45,7 +45,7 @@ export type FieldMeta = {
 	hide_on_edit?: boolean;
 	hide_on_view?: boolean;
 	readonly: boolean;
-	readonly_after_creation: boolean;
+	readonly_after_create: boolean;
 	required: boolean;
 	sort: number | null;
 	special: string[] | null;
@@ -94,7 +94,7 @@ export type Condition = {
 	hide_on_edit?: boolean;
 	hide_on_view?: boolean;
 	readonly?: boolean;
-	readonly_after_creation?: boolean;
+	readonly_after_create?: boolean;
 	hidden?: boolean;
 	options?: Record<string, any>;
 	required?: boolean;

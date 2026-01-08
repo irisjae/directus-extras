@@ -17,7 +17,7 @@ export type DirectusField<Schema = any> = {
 			display: string | null;
 			display_options: Record<string, any> | null;
 			readonly: boolean;
-			readonly_after_creation: boolean;
+			readonly_after_create: boolean;
 			hidden: boolean;
 			sort: number | null;
 			width: string | null;
@@ -63,7 +63,7 @@ export type FieldMetaConditionType = {
 	hide_on_edit: boolean;
 	hide_on_view: boolean;
 	readonly: boolean;
-	readonly_after_creation: boolean;
+	readonly_after_create: boolean;
 	required: boolean;
 	// TODO: rules use atomic operators and can nest
 	rule: unknown;

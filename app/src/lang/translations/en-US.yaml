@@ -441,7 +441,7 @@ precision_scale: Precision & Scale
 hide_on_edit: Hide on Edit
 hide_on_view: Hide on View
 readonly: Readonly
-readonly_after_creation: Readonly after Creation
+readonly_after_create: Readonly after Creation
 hide_on_create: Hide on Create
 hide_after_create: Hide after Creation
 unique: Unique
