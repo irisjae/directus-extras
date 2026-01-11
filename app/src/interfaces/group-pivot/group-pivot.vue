@@ -57,7 +57,7 @@ const groupPivots = (
 				const { relationInfo } = useRelationO2M(ref(field.collection), ref(field.field));
 				
 				const pivot = ref(null);
-				const { fetchedItems: pivots } = usePivot(primaryKey, relationInfo.value, options.pivotField, options.pivotFieldTemplate, options.virtualPivotField);
+				const { fetchedItems: pivots } = usePivot(props.field.collection, props.field.field, primaryKey, relationInfo.value, options.pivotField, options.pivotFieldTemplate, options.virtualPivotField);
 				const pivotItems = computed(() => {
 					return [
 						{ text: options.pivotPlaceholder || 'Default', value: null },

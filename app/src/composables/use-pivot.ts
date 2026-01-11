@@ -1,5 +1,7 @@
 import api from '@/api';
 import { useRelationsStore } from '@/stores/relations';
+import { useExtension } from '@/composables/use-extension';
+import { useFieldsStore } from '@/stores/fields';
 import { adjustFieldsForDisplays } from '@/utils/adjust-fields-for-displays';
 import { unexpectedError } from '@/utils/unexpected-error';
 import { getFieldsFromTemplate } from '@directus/utils';
@@ -8,15 +10,34 @@ import { clamp, cloneDeep, get, isEqual, merge } from 'lodash';
 import { Ref, computed, toRef, ref, watch } from 'vue';
 
 export function usePivot(
+	collection: string,
+	field: string,
 	itemId: Ref<string | number | null>,
-	relationInfo: RelationO2M,
+	relationInfo: RelationO2M | RelationM2M,
 	pivotField?: string,
 	pivotTemplate?: string,
 	virtualPivotField?: boolean,
 ) {
+	const fieldsStore = useFieldsStore();
+	
 	const { relatedCollection, reverseJunctionField } = relationInfo;
 	const loading = ref(false);
 	const fetchedItems = ref<Record<string, any>[]>([]);
+
+	const fieldMeta = pivotField ? fieldsStore.getField(relatedCollection.collection, pivotField)?.meta : null;
+	
+	const display = useExtension(
+		'display',
+		fieldMeta?.display ?? null,
+	);
+	const format =
+		display.value ? (value) =>
+			display.value.handler(value, fieldMeta.display_options ?? {}, {
+				interfaceOptions: fieldMeta.options ?? {},
+				field: field,
+				collection: collection,
+			})
+		: (value) => value;
 
 	watch(
 		[itemId],
@@ -55,7 +76,7 @@ export function usePivot(
 					groupBy: [ pivotField ],
 					limit: -1,
 					... virtualPivotField ? {
-						meta: [{ virtual: [ itemId.value ], virtualKind: ':pivot' }]
+						meta: [{ virtual: [ field, itemId.value ], virtualKind: '[' + pivotField + ']' }]
 					} : { [reverseJunctionField.field]: itemId.value }
 				};
 				const response = await api.get(getEndpoint(relatedCollection.collection), {
@@ -76,7 +97,7 @@ export function usePivot(
 										return getNestedValues(item[pivotField], fieldKey);
 									})
 									.join('')
-							: item[pivotField],
+							: format(item[pivotField]),
 						pivot: pivotTemplate ? item[pivotField].id : item[pivotField],
 						... item
 					};

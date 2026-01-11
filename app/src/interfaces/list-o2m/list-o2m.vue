@@ -123,7 +123,7 @@ const search = ref('');
 const searchFilter = ref<Filter>();
 const pivot = pivotHoisted ? groupPivots[props!.pivotField].pivot : ref(null);
 const pivotPlaceholder = props.pivotPlaceholder || 'Default';
-const { fetchedItems: pivots } = usePivot(primaryKey, relationInfo.value, pivotHoisted ? null : props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
+const { fetchedItems: pivots } = usePivot(props.collection, props.field, primaryKey, relationInfo.value, pivotHoisted ? null : props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
 
 const pivotItems = computed(() => {
 	return [
