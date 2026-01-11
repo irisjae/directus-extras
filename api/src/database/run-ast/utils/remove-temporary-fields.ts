@@ -71,6 +71,8 @@ export function removeTemporaryFields(
 		// Make sure any requested aggregate fields are included
 		if (ast.query?.aggregate) {
 			for (const [operation, aggregateFields] of Object.entries(ast.query.aggregate)) {
+				if (operation === 'result' && aggregateFields.includes('*')) fields.push('data');
+				
 				if (!fields) continue;
 
 				if (operation === 'count' && aggregateFields.includes('*')) fields.push('count');
@@ -104,5 +106,9 @@ export function removeTemporaryFields(
 		}
 	}
 
-	return Array.isArray(rawItem) ? items : items[0]!;
+	if ('result' in (ast.query?.aggregate ?? {})) {
+		return (rawItems[0] as any)!.result;
+	} else {
+		return Array.isArray(rawItem) ? items : items[0]!;
+	}
 }

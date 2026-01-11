@@ -86,7 +86,9 @@ const readHandler = asyncHandler(async (req, res, next) => {
 
 	res.locals['payload'] = {
 		meta: meta,
-		data: result,
+		...('result' in (req.sanitizedQuery.aggregate ?? {}) ?
+			result
+		: { data: result }),
 	};
 
 	return next();

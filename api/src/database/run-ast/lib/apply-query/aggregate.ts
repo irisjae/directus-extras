@@ -30,6 +30,8 @@ export function applyAggregate(
 
 			if (['count', 'countDistinct', 'avg', 'avgDistinct', 'sum', 'sumDistinct', 'min', 'max'].includes(operation)) {
 				(dbQuery as any)[operation](`${collection}.${field}`, { as: `${operation}->${field}` });
+			} else if (['result'].includes(operation)) {
+				dbQuery.select('result');
 			}
 		}
 	}
