@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Sort } from '@/components/v-table/types';
 import { useRelationM2M } from '@/composables/use-relation-m2m';
+import { usePivot } from '@/composables/use-pivot';
 import { DisplayItem, RelationQueryMultiple, useRelationMultiple } from '@/composables/use-relation-multiple';
 import { useRelationPermissionsM2M } from '@/composables/use-relation-permissions';
 import { useFieldsStore } from '@/stores/fields';
@@ -8,17 +9,19 @@ import { LAYOUTS } from '@/types/interfaces';
 import { addRelatedPrimaryKeyToFields } from '@/utils/add-related-primary-key-to-fields';
 import { adjustFieldsForDisplays } from '@/utils/adjust-fields-for-displays';
 import { formatItemsCountPaginated } from '@/utils/format-items-count';
+import { saveAsCSV } from '@/utils/save-as-csv';
 import { getItemRoute } from '@/utils/get-route';
 import { parseFilter } from '@/utils/parse-filter';
 import DrawerBatch from '@/views/private/components/drawer-batch.vue';
 import DrawerCollection from '@/views/private/components/drawer-collection.vue';
 import DrawerItem from '@/views/private/components/drawer-item.vue';
 import SearchInput from '@/views/private/components/search-input.vue';
+import { router } from '@/router';
 import { Filter } from '@directus/types';
 import { deepMap, getFieldsFromTemplate } from '@directus/utils';
 import { clamp, get, isEmpty, isNil, merge, set } from 'lodash';
 import { render } from 'micromustache';
-import { computed, inject, ref, toRefs, watch } from 'vue';
+import { provide, computed, inject, ref, toRefs, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Draggable from 'vuedraggable';
 
@@ -31,12 +34,22 @@ const props = withDefaults(
 		width: string;
 		layout?: LAYOUTS;
 		tableSpacing?: 'compact' | 'cozy' | 'comfortable';
+		nullText?: string;
+		virtualTable?: boolean;
+		pivotField?: string;
+		pivotPlaceholder?: string;
+		pivotFieldTemplate?: string;
+		virtualPivotField?: boolean;
+		listExport?: boolean;
 		fields?: Array<string>;
+		fieldsMeta?: { [key: string]: any; };
 		template?: string | null;
 		disabled?: boolean;
 		enableCreate?: boolean;
 		enableSelect?: boolean;
+		fieldFilters?: Record<string, any>;
 		filter?: Filter | null;
+		showFilter?: boolean;
 		enableSearchFilter?: boolean;
 		enableLink?: boolean;
 		limit?: number;
@@ -48,6 +61,11 @@ const props = withDefaults(
 		value: () => [],
 		layout: LAYOUTS.LIST,
 		tableSpacing: 'cozy',
+		virtualTable: false,
+		pivotField: null,
+		pivotFieldTemplate: null,
+		virtualPivotField: false,
+		listExport: false,
 		fields: () => ['id'],
 		template: null,
 		disabled: false,
@@ -120,12 +138,76 @@ const fields = computed(() => {
 	return addRelatedPrimaryKeyToFields(relationInfo.value.junctionCollection.collection, displayFields);
 });
 
+const values = inject('values', ref<Record<string, any>>({}));
+const groupPivots = inject('groupPivots', {});
+const pivotHoisted = !!props.pivotField && (props.pivotField in groupPivots);
 const limit = ref(props.limit);
 const page = ref(1);
 const search = ref('');
 const searchFilter = ref<Filter>();
 const sort = ref<Sort>();
 const junctionFilter = ref<Filter | null>(props.junctionFilter ?? null);
+const pivot = pivotHoisted ? groupPivots[props!.pivotField].pivot : ref(null);
+const pivotPlaceholder = props.pivotPlaceholder || 'Default';
+const { fetchedItems: pivots } = usePivot(props.collection, props.field, primaryKey, relationInfo.value, pivotHoisted ? null : props.pivotField, props.pivotFieldTemplate, props.virtualPivotField);
+
+const pivotItems = computed(() => {
+	return [
+		{ text: pivotPlaceholder, value: null },
+		... pivots.value.map(({ pivotDisplay, pivot }) => ({
+			text: pivotDisplay,
+			value: pivot,
+		}))
+	];
+});
+
+const fieldFilters = computed(() => {
+	if (props.fieldFilters) {
+		return Object.fromEntries(
+			Object.entries(props.fieldFilters).map(([field, filter]) => 
+				[
+					field,
+					parseFilter(
+						deepMap(filter, (val: any) => {
+							if (val && typeof val === 'string') {
+								return render(val, values.value);
+							}
+
+							return val;
+						}),
+					)
+				]
+			)
+		);
+	} else {
+		return {};
+	}
+});
+const fieldsFilter = computed(() => {
+	if (props.fieldFilters) {
+		const filters = Object.entries(fieldFilters.value).map(([field, filter]) => ({ [field]: filter }));
+		if (filters.length) {
+			return { _and: filters };
+		}
+	}
+});
+const extraFieldOptions = computed(() => {
+	if (props.fieldFilters) {
+		return Object.fromEntries(
+			Object.entries(fieldFilters.value).map(([field, filter]) => 
+				[
+					field,
+					{ 
+						filter,
+						showFilter: false,
+					}
+				]
+			)
+		);
+	} else {
+		return {};
+	}
+});
 
 const query = computed<RelationQueryMultiple>(() => {
 	const q: RelationQueryMultiple = {
@@ -139,7 +221,7 @@ const query = computed<RelationQueryMultiple>(() => {
 	}
 
 	if (searchFilter.value) {
-		q.filter = searchFilter.value;
+		q.filter = searchFilter.value
 	}
 
 	if (junctionFilter.value) {
@@ -171,13 +253,15 @@ const {
 	remove,
 	select,
 	displayItems,
+	fetchedItems,
+	fetchItems,
 	totalItemCount,
 	loading,
 	selected,
 	isItemSelected,
 	isLocalItem,
 	getItemEdits,
-} = useRelationMultiple(value, query, relationInfo, primaryKey);
+} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, pivot, fieldsFilter);
 
 const { createAllowed, updateAllowed, deleteAllowed, selectAllowed } = useRelationPermissionsM2M(relationInfo);
 
@@ -231,6 +315,7 @@ watch(
 					value: key,
 					width: contentWidth[key] < 10 ? contentWidth[key] * 16 + 10 : 160,
 					sortable: !['json'].includes(field.type),
+					... (props.fieldsMeta?.[key] || {})
 				};
 			})
 			.filter((key) => key !== null);
@@ -328,7 +413,11 @@ function editItem(item: DisplayItem) {
 }
 
 function editRow({ item }: { item: DisplayItem }) {
-	editItem(item);
+	if (props.disabled) {
+		router.push(getLinkForItem(item));
+	} else {
+		editItem(item);
+	}
 }
 
 function stageEdits(item: Record<string, any>) {
@@ -402,8 +491,6 @@ function stageBatchEdits(edits: Record<string, any>) {
 	selection.value = [];
 }
 
-const values = inject('values', ref<Record<string, any>>({}));
-
 const customFilter = computed(() => {
 	const filter: Filter = {
 		_and: [],
@@ -460,6 +547,11 @@ function getLinkForItem(item: DisplayItem) {
 
 	return null;
 }
+
+if (props.nullText !== undefined && props.nullText !== null) {
+	provide('nullText', props.nullText);
+}
+
 </script>
 
 <template>
@@ -470,8 +562,16 @@ function getLinkForItem(item: DisplayItem) {
 		{{ t('no_singleton_relations') }}
 	</v-notice>
 	<div v-else class="many-to-many">
-		<div :class="[`layout-${layout}`, { bordered: layout === LAYOUTS.TABLE }]">
+		<div :class="[`layout-${layout}`]">
 			<div v-if="layout === LAYOUTS.TABLE" class="actions top" :class="width">
+				<v-select
+					v-if="pivotField !== null && !pivotHoisted"
+					v-model="pivot"
+					:fullWidth="false"
+					:items="pivotItems"
+					class="pivot-select"
+				/>
+				
 				<div class="spacer" />
 
 				<div v-if="totalItemCount" class="item-count">
@@ -486,6 +586,17 @@ function getLinkForItem(item: DisplayItem) {
 					/>
 				</div>
 
+				<v-button
+					v-if="listExport && disabled"
+					v-tooltip.bottom="t('label_export')"
+					rounded
+					icon
+					secondary
+					@click="fetchItems({ limit: -1, page: 1 }).then((items) => saveAsCSV(relationInfo.relatedCollection.collection, props.fields, items, { __plain: true, ... (fieldsMeta ?? {}) }))"
+				>
+					<v-icon name="download" outline />
+				</v-button>
+				
 				<v-button
 					v-if="!disabled && updateAllowed && selectedKeys.length"
 					v-tooltip.bottom="t('edit')"
@@ -518,7 +629,6 @@ function getLinkForItem(item: DisplayItem) {
 					<v-icon name="add" />
 				</v-button>
 			</div>
-
 			<v-table
 				v-if="layout === LAYOUTS.TABLE"
 				v-model:sort="sort"
@@ -582,6 +692,14 @@ function getLinkForItem(item: DisplayItem) {
 			</template>
 
 			<template v-else>
+				<v-select
+					v-if="pivotField !== null && !pivotHoisted"
+					v-model="pivot"
+					:fullWidth="false"
+					:items="pivotItems"
+					class="pivot-select"
+				/>
+				
 				<v-notice v-if="displayItems.length === 0">
 					{{ t('no_items') }}
 				</v-notice>
@@ -599,10 +717,9 @@ function getLinkForItem(item: DisplayItem) {
 						<v-list-item
 							block
 							clickable
-							:disabled="disabled"
 							:dense="totalItemCount > 4"
 							:class="{ deleted: element.$type === 'deleted' }"
-							@click="editItem(element)"
+							@click="editRow({ item: element })"
 						>
 							<v-icon v-if="allowDrag" name="drag_handle" class="drag-handle" left @click.stop="() => {}" />
 
@@ -658,11 +775,11 @@ function getLinkForItem(item: DisplayItem) {
 					</template>
 				</template>
 				<template v-else>
-					<v-button v-if="enableCreate && createAllowed" :disabled="disabled" @click="createItem">
+					<v-button v-if="enableCreate && createAllowed && !disabled" @click="createItem">
 						{{ t('create_new') }}
 					</v-button>
 
-					<v-button v-if="enableSelect && selectAllowed" :disabled="disabled" @click="selectModalActive = true">
+					<v-button v-if="enableSelect && selectAllowed && !disabled" @click="selectModalActive = true">
 						{{ t('add_existing') }}
 					</v-button>
 
@@ -682,6 +799,7 @@ function getLinkForItem(item: DisplayItem) {
 			:junction-field="relationInfo.junctionField.field"
 			:edits="editsAtStart"
 			:circular-field="relationInfo.reverseJunctionField.field"
+			:extra-field-options="extraFieldOptions"
 			:junction-field-location="junctionFieldLocation"
 			@input="stageEdits"
 		/>
@@ -691,6 +809,7 @@ function getLinkForItem(item: DisplayItem) {
 			v-model:active="selectModalActive"
 			:collection="relationInfo.relatedCollection.collection"
 			:filter="customFilter"
+			:show-filter="showFilter"
 			multiple
 			@input="select"
 		/>
@@ -699,6 +818,7 @@ function getLinkForItem(item: DisplayItem) {
 			v-model:active="batchEditActive"
 			:primary-keys="selectedKeys"
 			:collection="relationInfo.relatedCollection.collection"
+			:extra-field-options="extraFieldOptions"
 			stage-on-save
 			@input="stageBatchEdits"
 		/>
@@ -706,24 +826,25 @@ function getLinkForItem(item: DisplayItem) {
 </template>
 
 <style lang="scss">
+.pivot-select > .v-menu-activator > .v-input {
+	min-width: 200px;
+}
 .many-to-many {
-	.bordered {
-		.render-template {
-			line-height: 1;
-		}
+	.render-template {
+		line-height: 1;
+	}
 
-		.no-last-border {
-			tr.table-row:last-child td {
-				border-bottom: none;
-			}
+	.no-last-border {
+		tr.table-row:last-child td {
+			border-bottom: none;
 		}
+	}
 
-		tr.table-row {
-			.append {
-				position: sticky;
-				right: 0;
-				border-left: var(--theme--border-width) solid var(--theme--border-color-subdued);
-			}
+	tr.table-row {
+		.append {
+			position: sticky;
+			right: 0;
+			border-left: var(--theme--border-width) solid var(--theme--border-color-subdued);
 		}
 	}
 }
@@ -731,12 +852,6 @@ function getLinkForItem(item: DisplayItem) {
 
 <style lang="scss" scoped>
 @use '@/styles/mixins';
-
-.bordered {
-	border: var(--theme--border-width) solid var(--theme--form--field--input--border-color);
-	border-radius: var(--theme--border-radius);
-	padding: var(--v-card-padding, 16px);
-}
 
 .v-table .deleted {
 	color: var(--danger-75);

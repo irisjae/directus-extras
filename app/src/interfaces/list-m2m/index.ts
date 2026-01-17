@@ -1,5 +1,8 @@
 import type { DeepPartial, Field } from '@directus/types';
 import { defineInterface } from '@directus/extensions';
+import { useFieldsStore } from '@/stores/fields';
+import { useRelationsStore } from '@/stores/relations';
+import { useRelationM2O } from '@/composables/use-relation-m2o';
 import InterfaceListM2M from './list-m2m.vue';
 import PreviewSVG from './preview.svg?raw';
 
@@ -14,9 +17,41 @@ export default defineInterface({
 	localTypes: ['m2m'],
 	group: 'relational',
 	options: ({ editing, relations, field: { meta } }) => {
+		const fieldsStore = useFieldsStore();
+		const relationsStore = useRelationsStore();
 		const { collection, related_collection } = relations.m2o ?? {};
 		const options = meta?.options ?? {};
 
+		const fields = fieldsStore.getFieldsForCollection(collection);
+
+		const pivotTemplateOptions: () => DeepPartial<Field>[] = () => {
+			if (!options.pivotField) {
+				return [];
+			}
+
+			const pivotFields = fields.filter((field) => field.field === options.pivotField);
+			
+			if (! pivotFields?.[0]?.meta?.special?.includes?.('m2o')) {
+				return [];
+			}
+
+			const pivotCollection = relationsStore.getRelationsForField(collection, options.pivotField)[0].related_collection;
+			
+			return [
+				{
+					field: 'pivotFieldTemplate',
+					name: '$t:pivot_field_template',
+					meta: {
+						interface: 'system-display-template',
+						options: {
+							collectionName: pivotCollection,
+						},
+						width: 'full',
+					},
+				},
+			];
+		};
+		
 		const tableOptions: DeepPartial<Field>[] = [
 			{
 				field: 'tableSpacing',
@@ -46,6 +81,25 @@ export default defineInterface({
 				},
 			},
 			{
+				field: 'nullText',
+				name: '$t:null_text',
+				meta: {
+					interface: 'input',
+					width: 'full',
+				},
+			},
+			{
+				field: 'virtualTable',
+				name: '$t:virtual_table',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					width: 'full',
+				},
+			},
+			{
 				field: 'fields',
 				name: '$t:columns',
 				meta:
@@ -63,6 +117,49 @@ export default defineInterface({
 								},
 								width: 'full',
 						  },
+			},
+			{
+				field: 'pivotField',
+				name: '$t:pivot_field',
+				meta: {
+					interface: 'system-field',
+					options: {
+						collectionName: collection,
+					},
+					width: 'full',
+				},
+			},
+			... pivotTemplateOptions(),
+			{
+				field: 'pivotPlaceholder',
+				name: '$t:pivot_placeholder',
+				meta: {
+					interface: 'input',
+					width: 'half',
+				},
+			},
+			{
+				field: 'virtualPivotField',
+				name: '$t:virtual_pivot_field',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					width: 'half',
+				},
+			},
+			{
+				field: 'listExport',
+				name: '$t:list_export',
+				schema: {
+					default_value: false,
+				},
+				meta: {
+					interface: 'boolean',
+					width: 'full',
+					label: '$t:list_export_label',
+				},
 			},
 		];
 
@@ -138,6 +235,27 @@ export default defineInterface({
 						label: '$t:enable_select_button',
 					},
 					width: 'half',
+				},
+			},
+			{
+				field: 'fieldFilters',
+				name: '$t:field_filters',
+				type: 'json',
+				meta: {
+					interface: 'field-filters',
+					options: {
+						collectionName: collection,
+					},
+					conditions: [
+						{
+							rule: {
+								enableCreate: {
+									_eq: false,
+								},
+							},
+							hidden: true,
+						},
+					],
 				},
 			},
 			{
