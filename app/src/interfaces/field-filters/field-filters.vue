@@ -33,7 +33,7 @@ const listItems = computed(() =>
 			return ({
 				field: fieldName,
 				displayName: field.name,
-				collection: collectionsStore.getCollection(relation.related_collection).name,
+				collection: relation.related_collection,
 				filter: filter,
 			});
 		}) ?? [],
