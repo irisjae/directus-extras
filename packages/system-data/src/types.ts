@@ -34,6 +34,7 @@ export type CollectionMeta = {
 	versioning: boolean;
 	sort_field: string | null;
 	name_field: string | null;
+	range_field: string | null;
 	archive_field: string | null;
 	archive_value: string | null;
 	unarchive_value: string | null;

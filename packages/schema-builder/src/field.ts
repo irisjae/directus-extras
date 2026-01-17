@@ -126,6 +126,17 @@ export class FieldBuilder {
 		};
 	}
 
+	/** Marks the field as the range_field of the collection */
+	range() {
+		assert(this._collection, 'Can only set range on a collection');
+		assert(this._collection._data.rangeField === null, 'Can only set a range field once');
+
+		this._collection._data = {
+			...this._collection._data,
+			rangeField: this._data.field,
+		};
+	}
+
 	boolean() {
 		assert(this._data._kind === 'initial', 'Field type was already set');
 

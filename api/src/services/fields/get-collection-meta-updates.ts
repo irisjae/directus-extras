@@ -10,6 +10,7 @@ export function getCollectionMetaUpdates(
 		read_only?: null | boolean;
 		sort_field?: null | string;
 		name_field?: null | string;
+		range_field?: null | string;
 		kind?: null | string;
 		item_duplication_fields?: null | string | string[];
 		collection: string;
@@ -38,6 +39,10 @@ export function getCollectionMetaUpdates(
 			}
 			if (collectionMeta?.name_field === field) {
 				meta.updates['name_field'] = null;
+				hasUpdates = true;
+			}
+			if (collectionMeta?.range_field === field) {
+				meta.updates['range_field'] = null;
 				hasUpdates = true;
 			}
 		}

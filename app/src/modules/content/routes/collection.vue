@@ -5,6 +5,8 @@ import { useCollectionPermissions } from '@/composables/use-permissions';
 import { usePreset } from '@/composables/use-preset';
 import { getCollectionRoute, getItemRoute } from '@/utils/get-route';
 import { unexpectedError } from '@/utils/unexpected-error';
+import { useFieldsStore } from '@/stores/fields';
+import { useRelationsStore } from '@/stores/relations';
 import ArchiveSidebarDetail from '@/views/private/components/archive-sidebar-detail.vue';
 import BookmarkAdd from '@/views/private/components/bookmark-add.vue';
 import DrawerBatch from '@/views/private/components/drawer-batch.vue';
@@ -21,6 +23,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import ContentNavigation from '../components/navigation.vue';
 import ContentNotFound from './not-found.vue';
+import InputComponent from '@/interfaces/_system/system-filter/input-component.vue';
 import { isSystemCollection } from '@directus/system-data';
 
 type Item = {
@@ -43,9 +46,10 @@ const { collection } = toRefs(props);
 const bookmarkID = computed(() => (props.bookmark ? +props.bookmark : null));
 
 const { selection } = useSelection();
-const { info: currentCollection, isReadonly } = useCollection(collection);
+const { info: currentCollection, isReadonly, rangeField } = useCollection(collection);
 const { addNewLink, currentCollectionLink } = useLinks();
 const { breadcrumb } = useBreadcrumb();
+
 
 const {
 	layout,
@@ -78,6 +82,9 @@ const {
 	batchEditActive,
 } = useBatch();
 
+const fieldsStore = useFieldsStore();
+const relationsStore = useRelationsStore();
+
 const { bookmarkDialogActive, creatingBookmark, createBookmark } = useBookmarks();
 
 const currentLayout = useExtension('layout', layout);
@@ -98,6 +105,52 @@ const {
 	deleteAllowed: batchDeleteAllowed,
 	createAllowed,
 } = useCollectionPermissions(collection);
+
+const rangeFieldInfo = computed(() => {
+	if (rangeField.value) {
+		const fieldInfo = fieldsStore.getField(props.collection, rangeField.value);
+
+		// Alias uses the foreign key type
+		if (fieldInfo?.type === 'alias') {
+			const relations = relationsStore.getRelationsForField(props.collection, rangeField.value);
+
+			if (relations[0]) {
+				return fieldsStore.getField(relations[0].collection, relations[0].field);
+			}
+		}
+
+		return fieldInfo;
+	}
+});
+const rangeInterfaceType = computed(() => {
+	if (rangeFieldInfo.value?.meta?.options?.choices) return 'select';
+
+	const types: Record<string, string> = {
+		bigInteger: 'input',
+		binary: 'input',
+		boolean: 'boolean',
+		date: 'datetime',
+		dateTime: 'datetime',
+		decimal: 'input',
+		float: 'input',
+		integer: 'input',
+		json: 'input-code',
+		string: 'input',
+		text: 'input-multiline',
+		time: 'datetime',
+		timestamp: 'datetime',
+		uuid: 'input',
+		csv: 'input',
+		hash: 'input-hash',
+		geometry: 'map',
+	};
+
+	return 'interface-' + types[rangeFieldInfo.value?.type || 'string'];
+});
+const rangeChoices = computed(() => rangeFieldInfo.value?.meta?.options?.choices ?? []);
+
+const rangeStart = ref(null);
+const rangeEnd = ref(null);
 
 const hasArchive = computed(
 	() =>
@@ -131,6 +184,24 @@ const archiveFilter = computed<Filter | null>(() => {
 			[field]: {
 				_neq: archiveValue,
 			},
+		};
+	}
+});
+const systemFilter = computed<Filter | null>(() => {
+	const filter = archiveFilter.value;
+	const rangeFilter = (
+		(rangeStart.value !== null && rangeEnd.value !== null) ? {
+			[rangeField.value]: { _between: [ rangeStart.value, rangeEnd.value ] }
+		} : null
+	);
+
+	if (filter === null) {
+		return rangeFilter;
+	} else if (rangeFilter === null) {
+		return filter;
+	} else {
+		return {
+			_and: [ filter, rangeFilter ]
 		};
 	}
 });
@@ -291,8 +362,8 @@ function clearFilters() {
 		v-model:layout-options="layoutOptions"
 		v-model:layout-query="layoutQuery"
 		:filter-user="filter"
-		:filter-system="archiveFilter"
-		:filter="mergeFilters(filter, archiveFilter)"
+		:filter-system="systemFilter"
+		:filter="mergeFilters(filter, systemFilter)"
 		:search="search"
 		:collection="collection"
 		:reset-preset="resetPreset"
@@ -372,6 +443,44 @@ function clearFilters() {
 
 			<template #actions>
 				<search-input v-model="search" v-model:filter="filter" :collection="collection" />
+				
+				<div 
+					v-if="rangeFieldInfo"
+					class="range-selection"
+				>
+					<div>Between</div>
+					<div class="range-container">
+						<div>
+							<div class="range-control">
+								<input-component
+									:is="rangeInterfaceType"
+									:choices="rangeChoices"
+									:type="rangeFieldInfo?.type ?? 'unknown'"
+									:value="rangeStart" 
+									@input="rangeStart = $event" 
+								/>
+							</div>
+							<div class="range-control">
+							<input-component
+								:is="rangeInterfaceType"
+								:choices="rangeChoices"
+								:type="rangeFieldInfo?.type ?? 'unknown'"
+								:value="rangeEnd" 
+								@input="rangeEnd = $event" 
+							/>
+							</div>
+						</div>
+						<span class="delete">
+							<v-icon
+								v-tooltip="t('delete_label')"
+								name="close"
+								small
+								clickable
+								@click="rangeStart = null, rangeEnd = null"
+							/>
+						</span>
+					</div>
+				</div>
 
 				<template v-if="!isReadonly">
 					<v-dialog v-if="selection.length > 0" v-model="confirmDelete" @esc="confirmDelete = false" @apply="batchDelete">
@@ -539,7 +648,7 @@ function clearFilters() {
 				<refresh-sidebar-detail v-model="refreshInterval" @refresh="refresh" />
 				<export-sidebar-detail
 					:collection="collection"
-					:filter="mergeFilters(filter, archiveFilter)"
+					:filter="mergeFilters(filter, systemFilter)"
 					:search="search"
 					:layout-query="layoutQuery"
 					:on-download="downloadHandler"
@@ -569,6 +678,50 @@ function clearFilters() {
 </template>
 
 <style lang="scss" scoped>
+.range-selection {
+	margin: 0 8px;
+	color: var(--theme--foreground-subdued);
+	align-self: center;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	
+	.delete {
+		--v-icon-color: var(--theme--form--field--input--foreground-subdued);
+		--v-icon-color-hover: var(--theme--danger);
+
+		position: absolute;
+		top: 50%;
+		left: 100%;
+		margin-left: -8px;
+		transform: translateY(-50%);
+		opacity: 0;
+		transition: opacity var(--fast) var(--transition);
+	}
+
+	&:focus-within,
+	&:hover {
+		.delete {
+			opacity: 1;
+		}
+	}
+
+}
+.range-container {
+	height: 0;
+	margin: 0 8px;
+	
+	> div {
+		display: flex;
+		flex-direction: column;
+	        transform: translateY(-50%);
+	}
+}
+.range-control {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
 .action-delete {
 	--v-button-background-color-hover: var(--theme--danger) !important;
 	--v-button-color-hover: var(--white) !important;

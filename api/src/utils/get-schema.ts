@@ -160,6 +160,7 @@ async function getDatabaseSchema(database: Knex, schemaInspector: SchemaInspecto
 			note: collectionMeta?.note || null,
 			sortField: collectionMeta?.sort_field || null,
 			nameField: collectionMeta?.name_field || null,
+			rangeField: collectionMeta?.range_field || null,
 			kind: collectionMeta?.kind || null,
 			accountability: collectionMeta ? collectionMeta.accountability : 'all',
 			fields: mapValues(schemaOverview[collection]?.columns, (column) => {

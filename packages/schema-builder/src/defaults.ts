@@ -16,6 +16,7 @@ export const COLLECTION_DEFAULTS = {
 	readOnly: false,
 	sortField: null,
 	nameField: null,
+	rangeField: null,
 	note: null,
 	accountability: 'all',
 	kind: null,

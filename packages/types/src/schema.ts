@@ -24,6 +24,7 @@ export type CollectionOverview = {
 	readOnly: boolean;
 	sortField: string | null;
 	nameField: string | null;
+	rangeField: string | null;
 	kind: string | null;
 	note: string | null;
 	accountability: 'all' | 'activity' | null;
