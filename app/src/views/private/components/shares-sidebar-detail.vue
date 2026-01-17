@@ -256,6 +256,7 @@ async function copy(id: string) {
 
 <template>
 	<sidebar-detail
+		tag="shares"
 		:title
 		icon="share"
 		:badge="!loadingCount && sharesCount > 0 ? abbreviateNumber(sharesCount) : null"

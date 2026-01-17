@@ -8,6 +8,7 @@ const props = defineProps<{
 	title: string;
 	badge?: boolean | string | number;
 	close?: boolean;
+	tag?: string;
 }>();
 
 const emit = defineEmits<{
@@ -29,7 +30,7 @@ function onClick() {
 </script>
 
 <template>
-	<div class="sidebar-detail" :class="{ open: sidebarOpen }">
+	<div class="sidebar-detail" :class="{ open: sidebarOpen }" :tag="tag">
 		<button v-if="close" v-show="sidebarOpen" class="close" @click="sidebarOpen = false">
 			<v-icon name="close" />
 		</button>

@@ -99,7 +99,7 @@ function useUpload() {
 </script>
 
 <template>
-	<sidebar-detail icon="publish" :title="t('label_import')">
+	<sidebar-detail tag="basic-import" icon="publish" :title="t('label_import')">
 		<div class="fields">
 			<template v-if="createAllowed">
 				<div class="field full">
