@@ -7,7 +7,7 @@ import { unexpectedError } from '@/utils/unexpected-error';
 import { Filter, Item } from '@directus/types';
 import { getEndpoint, toArray } from '@directus/utils';
 import { clamp, cloneDeep, get, isEqual, merge } from 'lodash';
-import { Ref, computed, ref, watch } from 'vue';
+import { Ref, computed, ref, watch, toRef } from 'vue';
 
 export type RelationQueryMultiple = {
 	page: number;
@@ -39,7 +39,10 @@ export function useRelationMultiple(
 	pivotField?: string,
 	virtualTable?: boolean,
 	pivot?: Ref<any>,
+	filter?: Ref<Filter>,
 ) {
+	filter = toRef(filter);
+	
 	const loading = ref(false);
 	const fetchedItems = ref<Record<string, any>[]>([]);
 	const existingItemCount = ref(0);
@@ -387,6 +390,10 @@ export function useRelationMultiple(
 
 		if (previewQuery.value.filter) {
 			filterOptions.filter._and.push(previewQuery.value.filter);
+		}
+
+		if (filter.value) {
+			filterOptions.filter._and.push(filter.value);
 		}
 
 		const response = await api.get(getEndpoint(targetCollection), {

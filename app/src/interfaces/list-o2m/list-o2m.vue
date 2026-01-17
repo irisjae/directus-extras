@@ -115,6 +115,7 @@ const fields = computed(() => {
 	return addRelatedPrimaryKeyToFields(relationInfo.value.relatedCollection.collection, displayFields);
 });
 
+const values = inject('values', ref<Record<string, any>>({}));
 const groupPivots = inject('groupPivots', {});
 const pivotHoisted = !!props.pivotField && (props.pivotField in groupPivots);
 const limit = ref(props.limit);
@@ -133,6 +134,54 @@ const pivotItems = computed(() => {
 			value: pivot,
 		}))
 	];
+});
+
+const fieldFilters = computed(() => {
+	if (props.fieldFilters && values.value) {
+		return Object.fromEntries(
+			Object.entries(props.fieldFilters).map(([field, filter]) => 
+				[
+					field,
+					parseFilter(
+						deepMap(filter, (val: any) => {
+							if (val && typeof val === 'string') {
+								return render(val, values.value);
+							}
+
+							return val;
+						}),
+					)
+				]
+			)
+		);
+	} else {
+		return {};
+	}
+});
+const fieldsFilter = computed(() => {
+	if (props.fieldFilters) {
+		const filters = Object.entries(fieldFilters.value).map(([field, filter]) => ({ [field]: filter }));
+		if (filters.length) {
+			return { _and: filters };
+		}
+	}
+});
+const extraFieldOptions = computed(() => {
+	if (props.fieldFilters) {
+		return Object.fromEntries(
+			Object.entries(fieldFilters.value).map(([field, filter]) => 
+				[
+					field,
+					{ 
+						filter,
+						showFilter: false,
+					}
+				]
+			)
+		);
+	} else {
+		return {};
+	}
 });
 
 const manualSort = ref<Sort | null>(
@@ -183,7 +232,7 @@ const {
 	isItemSelected,
 	isLocalItem,
 	getItemEdits,
-} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, pivot);
+} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, pivot, fieldsFilter);
 
 const { createAllowed, deleteAllowed, updateAllowed } = useRelationPermissionsO2M(relationInfo);
 
@@ -387,34 +436,6 @@ function stageBatchEdits(edits: Record<string, any>) {
 
 	selection.value = [];
 }
-
-const values = inject('values', ref<Record<string, any>>({}));
-
-const extraFieldOptions = computed(() => {
-	if (props.fieldFilters) {
-		return Object.fromEntries(
-			Object.entries(props.fieldFilters).map(([field, filter]) => 
-				[
-					field,
-					{ 
-						filter: parseFilter(
-							deepMap(filter, (val: any) => {
-								if (val && typeof val === 'string') {
-									return render(val, values.value);
-								}
-
-								return val;
-							}),
-						),
-						showFilter: false,
-					}
-				]
-			)
-		);
-	} else {
-		return props.fieldFilters;
-	}
-});
 
 const customFilter = computed(() => {
 	const filter: Filter = {
