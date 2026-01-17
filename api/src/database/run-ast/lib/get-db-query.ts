@@ -174,18 +174,19 @@ export function getDBQuery(
 				const sortAlias = `sort_${generateAlias()}`;
 
 				let orderByColumn: Knex.Raw;
+				let nullOrder = 'last';
 
 				if (sortRecord.column.includes('.')) {
 					const [alias, field] = sortRecord.column.split('.');
 					const originalCollectionName = getCollectionFromAlias(alias!, aliasMap);
 					dbQuery.select(getColumn(knex, alias!, field!, sortAlias, schema, { originalCollectionName }));
 
-					orderByString += `?? ${sortRecord.order}`;
+					orderByString += `?? ${sortRecord.order} nulls ${nullOrder}`;
 					orderByColumn = getColumn(knex, alias!, field!, false, schema, { originalCollectionName });
 				} else {
 					dbQuery.select(getColumn(knex, table, sortRecord.column, sortAlias, schema));
 
-					orderByString += `?? ${sortRecord.order}`;
+					orderByString += `?? ${sortRecord.order} nulls ${nullOrder}`;
 					orderByColumn = getColumn(knex, table, sortRecord.column, false, schema);
 				}
 
@@ -211,19 +212,54 @@ export function getDBQuery(
 
 			dbQuery.orderByRaw(orderByString, orderByFields);
 		} else {
+			let orderByString = '';
+			const orderByFields: Knex.Raw[] = [];
+
 			sortRecords.map((sortRecord) => {
+				if (orderByString.length !== 0) {
+					orderByString += ', ';
+				}
+
+				const sortAlias = `sort_${generateAlias()}`;
+
+				let orderByColumn: Knex.Raw;
+				let nullOrder = 'last';
+
 				if (sortRecord.column.includes('.')) {
 					const [alias, field] = sortRecord.column.split('.');
+					const originalCollectionName = getCollectionFromAlias(alias!, aliasMap);
+					dbQuery.select(getColumn(knex, alias!, field!, sortAlias, schema, { originalCollectionName }));
 
-					sortRecord.column = getColumn(knex, alias!, field!, false, schema, {
-						originalCollectionName: getCollectionFromAlias(alias!, aliasMap),
-					}) as any;
+					orderByString += `?? ${sortRecord.order} nulls ${nullOrder}`;
+					orderByColumn = getColumn(knex, alias!, field!, false, schema, { originalCollectionName });
 				} else {
-					sortRecord.column = getColumn(knex, table, sortRecord.column, false, schema) as any;
+					dbQuery.select(getColumn(knex, table, sortRecord.column, sortAlias, schema));
+
+					orderByString += `?? ${sortRecord.order} nulls ${nullOrder}`;
+					orderByColumn = getColumn(knex, table, sortRecord.column, false, schema);
 				}
+
+				orderByFields.push(orderByColumn);
 			});
 
-			dbQuery.orderBy(sortRecords);
+			dbQuery.orderByRaw(orderByString, orderByFields);
+			
+			// HACK -- workaround for https://github.com/knex/knex/issues/5723
+			
+			// sortRecords.map((sortRecord) => {
+			// 	if (sortRecord.column.includes('.')) {
+			// 		const [alias, field] = sortRecord.column.split('.');
+
+			// 		sortRecord.column = getColumn(knex, alias!, field!, false, schema, {
+			// 			originalCollectionName: getCollectionFromAlias(alias!, aliasMap),
+			// 		}) as any;
+			// 	} else {
+			// 		sortRecord.column = getColumn(knex, table, sortRecord.column, false, schema) as any;
+			// 	}
+			// 	sortRecord.nulls = 'last';
+			// });
+
+			// dbQuery.orderBy(sortRecords);
 		}
 	}
 

@@ -6,7 +6,7 @@ import { getColumn } from '../../utils/get-column.js';
 import { getRelationInfo } from '../../../../utils/get-relation-info.js';
 import { addJoin } from './add-join.js';
 
-export type ColumnSortRecord = { order: 'asc' | 'desc'; column: string };
+export type ColumnSortRecord = { order: 'asc' | 'desc'; column: string; nulls?: 'first' | 'last'; };
 
 export function applySort(
 	knex: Knex,
