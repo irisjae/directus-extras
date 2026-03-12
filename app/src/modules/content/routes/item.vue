@@ -86,6 +86,16 @@ const {
 	validationErrors: itemValidationErrors,
 } = useItem(collection, primaryKey, query);
 
+watch(
+  props.singleton,
+  () => {
+    if (props.singleton) {
+      edit();
+    }
+  },
+  { immediate: true }
+);
+
 const validationErrors = computed(() => {
 	if (currentVersion.value === null) return itemValidationErrors.value;
 	return versionValidationErrors.value;
