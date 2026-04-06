@@ -133,7 +133,7 @@ function getChildBookmarks(collection: Collection) {
 		/>
 	</v-list-item>
 
-	<v-menu v-if="hasContextMenu" ref="contextMenu" show-arrow placement="bottom-start">
+	<v-menu v-if="false && hasContextMenu" ref="contextMenu" show-arrow placement="bottom-start">
 		<v-list>
 			<v-list-item v-if="isAdmin" clickable :to="`/settings/data-model/${collection.collection}`">
 				<v-list-item-icon>

@@ -72,7 +72,7 @@ const hasHiddenCollections = computed(
 				:search="search"
 			/>
 
-			<v-menu v-if="hasHiddenCollections" ref="contextMenu" show-arrow placement="bottom-start">
+			<v-menu v-if="false && hasHiddenCollections" ref="contextMenu" show-arrow placement="bottom-start">
 				<v-list>
 					<v-list-item clickable @click="showHidden = !showHidden">
 						<v-list-item-icon>
