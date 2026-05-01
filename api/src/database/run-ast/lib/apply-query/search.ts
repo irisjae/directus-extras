@@ -8,6 +8,8 @@ import { isValidUuid } from '../../../../utils/is-valid-uuid.js';
 import { parseNumericString } from '../../../../utils/parse-numeric-string.js';
 import { getHelpers } from '../../../helpers/index.js';
 import { applyFilter } from './filter/index.js';
+import { addJoin } from './add-join.js';
+import { getRelationInfo } from '../../../../utils/get-relation-info.js';
 
 export function applySearch(
 	knex: Knex,
@@ -31,6 +33,26 @@ export function applySearch(
 		fields = fields.filter((field) => allowedFields.has(field[0]));
 	}
 
+	const namedFields: Record<string, string> = {};
+	
+	fields.forEach(([name, ]) => {
+		const { relation } = getRelationInfo(schema.relations, collection, name);
+		if (relation && relation.collection === collection && relation.related_collection) {
+			const { nameField } = schema.collections[relation.related_collection]!;
+			if (nameField) {
+				addJoin({
+					path: [name, nameField],
+					collection: collection,
+					aliasMap: aliasMap,
+					rootQuery: dbQuery,
+					schema,
+					knex,
+				})
+				namedFields[name] = `${aliasMap[name]!.alias}.${nameField}`;
+			}
+		}
+	});
+
 	dbQuery.andWhere(function (queryBuilder) {
 		let needsFallbackCondition = true;
 
@@ -39,6 +61,11 @@ export function applySearch(
 			const whenCases = allowedFields.has('*') ? [] : (caseMap[name] ?? []).map((caseIndex) => cases[caseIndex]!);
 
 			const fieldType = getFieldType(field);
+	
+			if (name in namedFields) {
+				queryBuilder['or'].whereRaw(`LOWER(??) LIKE ?`, [`${namedFields[name]}`, `%${searchQuery.toLowerCase()}%`])
+				return;
+			} 
 
 			if (fieldType !== null) {
 				needsFallbackCondition = false;
