@@ -190,7 +190,7 @@ const archiveFilter = computed<Filter | null>(() => {
 const systemFilter = computed<Filter | null>(() => {
 	const filter = archiveFilter.value;
 	const rangeFilter = (
-		(rangeStart.value !== null && rangeEnd.value !== null) ? {
+		(rangeFieldInfo.value && rangeStart.value !== null && rangeEnd.value !== null) ? {
 			[rangeField.value]: { _between: [ rangeStart.value, rangeEnd.value ] }
 		} : null
 	);
@@ -461,13 +461,13 @@ function clearFilters() {
 								/>
 							</div>
 							<div class="range-control">
-							<input-component
-								:is="rangeInterfaceType"
-								:choices="rangeChoices"
-								:type="rangeFieldInfo?.type ?? 'unknown'"
-								:value="rangeEnd" 
-								@input="rangeEnd = $event" 
-							/>
+								<input-component
+									:is="rangeInterfaceType"
+									:choices="rangeChoices"
+									:type="rangeFieldInfo?.type ?? 'unknown'"
+									:value="rangeEnd" 
+									@input="rangeEnd = $event" 
+								/>
 							</div>
 						</div>
 						<span class="delete">
