@@ -12,6 +12,8 @@ import type { RunASTOptions } from './types.js';
 import { applyParentFilters } from './utils/apply-parent-filters.js';
 import { mergeWithParentItems } from './utils/merge-with-parent-items.js';
 import { removeTemporaryFields } from './utils/remove-temporary-fields.js';
+import { getRelationInfo } from '../../utils/get-relation-info.js';
+
 
 /**
  * Execute a given AST using Knex. Returns array of items based on requested AST.
@@ -52,6 +54,21 @@ export async function runAst(
 		accountability: Accountability | null,
 	) {
 		const env = useEnv();
+
+		if (!query.group && query.sort) {
+			for (let i = 0; i < query.sort.length; i++) {
+				const sortField = query.sort[i]!.replace('-', '');
+				if (!sortField.includes('.')) {
+					const { relation } = getRelationInfo(schema.relations, collection, sortField);
+					if (relation?.collection === collection) {
+						const nameField = schema.collections[relation.related_collection!]?.nameField;
+						if (nameField) {
+							query.sort[i] += '.' + nameField;
+						}
+					}
+				}
+			}
+		}
 
 		// Retrieve the database columns to select in the current AST
 		const { fieldNodes, primaryKeyField, nestedCollectionNodes } = await parseCurrentLevel(
