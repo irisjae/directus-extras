@@ -51,7 +51,7 @@ export function createLocalAuthRouter(provider: string): Router {
 	const router = Router();
 
 	const userLoginSchema = Joi.object({
-		email: Joi.string().email().required(),
+		email: Joi.string().required(),
 		password: Joi.string().required(),
 		mode: Joi.string().valid('cookie', 'json', 'session'),
 		otp: Joi.string(),
