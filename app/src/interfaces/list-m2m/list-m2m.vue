@@ -592,7 +592,7 @@ if (props.nullText !== undefined && props.nullText !== null) {
 					rounded
 					icon
 					secondary
-					@click="fetchItems({ limit: -1, page: 1 }).then((items) => saveAsCSV(relationInfo.relatedCollection.collection, props.fields, items, { __plain: true, ... (fieldsMeta ?? {}) }))"
+					@click="fetchItems({ limit: -1, page: 1 }).then((items) => items.length && saveAsCSV(relationInfo.relatedCollection.collection, props.fields, items, { __plain: true, ... (fieldsMeta ?? {}) }))"
 				>
 					<v-icon name="download" outline />
 				</v-button>

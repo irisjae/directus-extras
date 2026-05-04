@@ -135,7 +135,9 @@ export default defineLayout<LayoutOptions, LayoutQuery>({
 
 		function download() {
 			if (!collection.value) return;
-			saveAsCSV(collection.value, fields.value, items.value);
+			if (items.value.length) {
+				saveAsCSV(collection.value, fields.value, items.value);
+			}
 		}
 
 		function toPage(newPage: number) {
