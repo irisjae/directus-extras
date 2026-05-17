@@ -377,7 +377,7 @@ function useRawEditor() {
 		>
 			{{ t('no_visible_fields_copy') }}
 		</v-info>
-		<template v-for="(fieldName, index) in fieldNames" :key="fieldName">
+		<template v-for="(fieldName, index) in fieldNames" :key="(props.fields?.[0]?.collection ?? '') + '.' + fieldName">
 			<template v-if="fieldsMap[fieldName]">
 				<component
 					:is="`interface-${fieldsMap[fieldName]!.meta?.interface || 'group-standard'}`"
