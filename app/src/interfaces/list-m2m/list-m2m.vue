@@ -56,6 +56,8 @@ const props = withDefaults(
 		allowDuplicates?: boolean;
 		junctionFieldLocation?: string;
 		junctionFilter?: Filter | null;
+		sort?: string;
+		sortDirection?: '+' | '-';
 	}>(),
 	{
 		value: () => [],
@@ -145,7 +147,9 @@ const limit = ref(props.limit);
 const page = ref(1);
 const search = ref('');
 const searchFilter = ref<Filter>();
-const sort = ref<Sort>();
+const manualSort = ref<Sort | null>(
+	props.sort && !relationInfo.value?.sortField ? { by: props.sort, desc: props.sortDirection === '-' } : null,
+);
 const junctionFilter = ref<Filter | null>(props.junctionFilter ?? null);
 const pivot = pivotHoisted ? groupPivots[props!.pivotField].pivot : ref(null);
 const pivotPlaceholder = props.pivotPlaceholder || 'Default';
@@ -236,8 +240,8 @@ const query = computed<RelationQueryMultiple>(() => {
 		q.search = search.value;
 	}
 
-	if (sort.value) {
-		q.sort = [`${sort.value.desc ? '-' : ''}${sort.value.by}`];
+	if (manualSort.value) {
+		q.manualSort = [`${manualSort.value.desc ? '-' : ''}${manualSort.value.by}`];
 	}
 
 	return q;
@@ -315,7 +319,7 @@ watch(
 					value: key,
 					width: contentWidth[key] < 10 ? contentWidth[key] * 16 + 10 : 160,
 					sortable: !['json'].includes(field.type),
-					... (props.fieldsMeta?.[key] || {})
+					... (props.sfieldsMeta?.[key] || {})
 				};
 			})
 			.filter((key) => key !== null);
@@ -631,7 +635,7 @@ if (props.nullText !== undefined && props.nullText !== null) {
 			</div>
 			<v-table
 				v-if="layout === LAYOUTS.TABLE"
-				v-model:sort="sort"
+				v-model:sort="manualSort"
 				v-model:headers="headers"
 				v-model="selection"
 				:class="{ 'no-last-border': totalItemCount <= 10 }"
