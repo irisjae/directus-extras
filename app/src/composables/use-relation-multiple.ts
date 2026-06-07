@@ -502,6 +502,10 @@ export function useRelationMultiple(
 			filterOptions.filter._and.push(previewQuery.value.filter);
 		}
 
+		if (filter.value) {
+			filterOptions.filter._and.push(filter.value);
+		}
+
 		const response = await api.get(getEndpoint(targetCollection), {
 			params: {
 				search: previewQuery.value.search,
