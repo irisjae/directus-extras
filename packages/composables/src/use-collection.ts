@@ -12,6 +12,7 @@ export type UsableCollection = {
 	sortField: ComputedRef<string | null>;
 	nameField: ComputedRef<string | null>;
 	rangeField: ComputedRef<string | null>;
+	isHidden: ComputedRef<boolean>;
 	isSingleton: ComputedRef<boolean>;
 	isReadonly: ComputedRef<boolean>;
 	isHideCreate: ComputedRef<boolean>;
@@ -75,6 +76,10 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value?.meta?.range_field || null;
 	});
 
+	const isHidden = computed(() => {
+		return info.value?.meta?.hidden === true;
+	});
+
 	const isSingleton = computed(() => {
 		return info.value?.meta?.singleton === true;
 	});
@@ -101,5 +106,5 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value.meta.accountability;
 	});
 
-	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope };
+	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, isHidden, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope };
 }

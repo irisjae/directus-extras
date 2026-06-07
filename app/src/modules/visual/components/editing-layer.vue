@@ -128,7 +128,7 @@ function useItemWithEdits() {
 	}
 
 	function getContentRoute() {
-		if (isNew.value || collectionInfo.value?.meta?.singleton) {
+		if ((isNew.value || collectionInfo.value?.meta?.singleton) && (collectionInfo.value?.meta?.isHidden !== true)) {
 			return getCollectionRoute(collection.value);
 		}
 

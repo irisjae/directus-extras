@@ -47,7 +47,7 @@ const { breadcrumb } = useBreadcrumb();
 
 const revisionsDrawerDetailRef = ref<InstanceType<typeof RevisionsDrawerDetail> | null>(null);
 
-const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope } = useCollection(collection);
+const { info: collectionInfo, defaults, primaryKeyField, nameField, isHidden, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope } = useCollection(collection);
 
 const {
 	readVersionsAllowed,
@@ -361,14 +361,16 @@ function navigateBack() {
 		return;
 	}
 
-	router.push(getCollectionRoute(props.collection));
+	if (!isHidden.value) {
+		router.push(getCollectionRoute(props.collection));
+	}
 }
 
 function useBreadcrumb() {
 	const breadcrumb = computed(() => [
 		{
 			name: collectionInfo.value?.name,
-			to: getCollectionRoute(props.collection),
+			to: !isHidden.value ? getCollectionRoute(props.collection) : '',
 		},
 	]);
 
@@ -445,7 +447,7 @@ async function saveAndQuit() {
 
 	try {
 		await save();
-		if (props.singleton === false) router.push(getCollectionRoute(props.collection));
+		if (props.singleton === false && !isHidden.value) router.push(getCollectionRoute(props.collection));
 	} catch {
 		// Save shows unexpected error dialog
 	}
@@ -457,7 +459,9 @@ async function deleteAndQuit() {
 	try {
 		await remove();
 		edits.value = {};
-		router.replace(getCollectionRoute(props.collection));
+		if (!isHidden.value) {
+			router.replace(getCollectionRoute(props.collection));
+		}
 	} catch {
 		// `remove` will show the unexpected error dialog
 	} finally {
@@ -471,7 +475,7 @@ async function toggleArchive() {
 	try {
 		await archive();
 
-		if (isArchived.value === true) {
+		if (isArchived.value === true && !isHidden.value) {
 			router.push(getCollectionRoute(props.collection));
 		} else {
 			confirmArchive.value = false;

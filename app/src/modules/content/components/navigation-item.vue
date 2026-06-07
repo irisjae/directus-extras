@@ -4,7 +4,7 @@ import { usePresetsStore } from '@/stores/presets';
 import { useUserStore } from '@/stores/user';
 import { Collection } from '@/types/collections';
 import { getCollectionRoute } from '@/utils/get-route';
-import { useGroupable } from '@directus/composables';
+import { useGroupable, useCollection } from '@directus/composables';
 import { Preset } from '@directus/types';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -41,7 +41,8 @@ const { active: isGroupOpen } = useGroupable({
 
 const isBookmarkActive = computed(() => 'bookmark' in route.query);
 
-const to = computed(() => (props.collection.schema ? getCollectionRoute(props.collection.collection) : ''));
+const { isHidden } = useCollection(props.collection.collection);
+const to = computed(() => (props.collection.schema && !isHidden.value ? getCollectionRoute(props.collection.collection) : ''));
 
 const matchesSearch = computed(() => {
 	if (!props.search || props.search.length < 3) return true;
