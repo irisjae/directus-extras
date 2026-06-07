@@ -22,6 +22,9 @@ export type CollectionOverview = {
 	primary: string;
 	singleton: boolean;
 	readOnly: boolean;
+	hideCreate: boolean;
+	hideEdit: boolean;
+	hideDelete: boolean;
 	sortField: string | null;
 	nameField: string | null;
 	rangeField: string | null;

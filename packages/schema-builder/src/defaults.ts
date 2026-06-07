@@ -14,6 +14,9 @@ Note that `dbType` varies across databases. This is based on Postgres.
 export const COLLECTION_DEFAULTS = {
 	singleton: false,
 	readOnly: false,
+	hideCreate: false,
+	hideEdit: false,
+	hideDelete: false,
 	sortField: null,
 	nameField: null,
 	rangeField: null,

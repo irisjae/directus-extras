@@ -47,7 +47,7 @@ const { breadcrumb } = useBreadcrumb();
 
 const revisionsDrawerDetailRef = ref<InstanceType<typeof RevisionsDrawerDetail> | null>(null);
 
-const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, isReadonly, accountabilityScope } = useCollection(collection);
+const { info: collectionInfo, defaults, primaryKeyField, nameField, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope } = useCollection(collection);
 
 const {
 	readVersionsAllowed,
@@ -219,7 +219,7 @@ const { updateAllowed: updateVersionsAllowed } = useItemPermissions(
 const isFormDisabled = computed(() => {
 	if (viewing.value) return true;
 	if (isNew.value) return false;
-	if (updateAllowed.value) return false;
+	if (updateAllowed.value || isHideEdit) return false;
 	if (currentVersion.value !== null && updateVersionsAllowed.value) return false;
 	return true;
 });
@@ -248,7 +248,7 @@ const internalPrimaryKey = computed(() => {
 });
 
 const disabledOptions = computed(() => {
-	if (!createAllowed.value) return ['save-and-stay', 'save-and-add-new', 'save-as-copy'];
+	if (!createAllowed.value && !isHideCreate) return ['save-and-stay', 'save-and-add-new', 'save-as-copy'];
 	if (isNew.value) return ['save-and-stay', 'save-as-copy'];
 	return ['save-and-stay'];
 });
@@ -594,7 +594,7 @@ const shouldShowVersioning = computed(
 				<v-breadcrumb v-else :items="breadcrumb" class="headline-breadcrumb" />
 
 				<version-menu
-					v-if="shouldShowVersioning"
+					v-if="shouldShowVersioning && !isHideEdit"
 					:collection="collection"
 					:primary-key="internalPrimaryKey!"
 					:update-allowed="updateAllowed"
@@ -625,7 +625,7 @@ const shouldShowVersioning = computed(
 			</v-button>
 
 			<v-dialog
-				v-if="!viewing && !isNew && currentVersion === null"
+				v-if="!viewing && !isHideDelete && !isNew && currentVersion === null"
 				v-model="confirmDelete"
 				:disabled="deleteAllowed === false"
 				@esc="confirmDelete = false"

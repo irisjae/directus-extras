@@ -13,6 +13,9 @@ export type DirectusCollection<Schema = any> = {
 			hidden: boolean;
 			singleton: boolean;
 			read_only: boolean;
+			hide_create: boolean;
+			hide_edit: boolean;
+			hide_delete: boolean;
 			translations: CollectionMetaTranslationType[] | null;
 			archive_field: string | null;
 			archive_app_filter: boolean;

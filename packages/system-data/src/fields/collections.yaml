@@ -85,6 +85,30 @@ fields:
       label: $t:read_only_label
     width: half
 
+  - field: hide_create
+    special:
+      - cast-boolean
+    interface: boolean
+    options:
+      label: $t:hide_create_label
+    width: half
+
+  - field: hide_edit
+    special:
+      - cast-boolean
+    interface: boolean
+    options:
+      label: $t:hide_edit_label
+    width: half
+
+  - field: hide_delete
+    special:
+      - cast-boolean
+    interface: boolean
+    options:
+      label: $t:hide_delete_label
+    width: half
+
   # WIP
   - field: kind
     interface: input

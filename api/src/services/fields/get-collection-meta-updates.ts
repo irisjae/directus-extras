@@ -8,6 +8,9 @@ export function getCollectionMetaUpdates(
 	collectionMetas: {
 		archive_field?: null | string;
 		read_only?: null | boolean;
+		hide_create?: null | boolean;
+		hide_edit?: null | boolean;
+		hide_delete?: null | boolean;
 		sort_field?: null | string;
 		name_field?: null | string;
 		range_field?: null | string;

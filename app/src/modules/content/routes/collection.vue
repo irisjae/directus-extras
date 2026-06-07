@@ -46,7 +46,7 @@ const { collection } = toRefs(props);
 const bookmarkID = computed(() => (props.bookmark ? +props.bookmark : null));
 
 const { selection } = useSelection();
-const { info: currentCollection, isReadonly, rangeField } = useCollection(collection);
+const { info: currentCollection, isReadonly, isHideCreate, isHideEdit, isHideDelete, rangeField } = useCollection(collection);
 const { addNewLink, currentCollectionLink } = useLinks();
 const { breadcrumb } = useBreadcrumb();
 
@@ -486,6 +486,7 @@ function clearFilters() {
 					<v-dialog v-if="selection.length > 0" v-model="confirmDelete" @esc="confirmDelete = false" @apply="batchDelete">
 						<template #activator="{ on }">
 							<v-button
+								v-if="!isHideDelete"
 								v-tooltip.bottom="batchDeleteAllowed ? t('delete_label') : t('not_allowed')"
 								:disabled="batchDeleteAllowed !== true"
 								rounded
@@ -551,7 +552,7 @@ function clearFilters() {
 					</v-dialog>
 
 					<v-button
-						v-if="selection.length > 0"
+						v-if="selection.length > 0 && !isHideEdit"
 						v-tooltip.bottom="batchEditAllowed ? t('edit') : t('not_allowed')"
 						rounded
 						icon
@@ -563,6 +564,7 @@ function clearFilters() {
 					</v-button>
 
 					<v-button
+						v-if="!isHideCreate"
 						v-tooltip.bottom="createAllowed ? t('create_item') : t('not_allowed')"
 						rounded
 						icon
@@ -609,7 +611,7 @@ function clearFilters() {
 					<v-info :title="t('item_count', 0)" :icon="currentCollection.icon" center>
 						{{ t('no_items_copy') }}
 
-						<template v-if="!isReadonly && createAllowed" #append>
+						<template v-if="!isReadonly && createAllowed && !isHideCreate" #append>
 							<v-button :to="getItemRoute(collection, '+')">{{ t('create_item') }}</v-button>
 						</template>
 					</v-info>

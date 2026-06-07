@@ -1291,6 +1291,9 @@ content: Content
 singleton: Singleton
 singleton_label: Treat as single object
 read_only_label: Treat as read-only
+hide_create_label: Hide Create
+hide_edit_label: Hide Edit
+hide_delete_label: Hide Delete
 system_fields_locked: System fields are locked and can't be edited
 directus_collection:
   directus_access: Policy attachments

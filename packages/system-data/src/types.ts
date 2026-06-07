@@ -26,6 +26,9 @@ export type CollectionMeta = {
 	hidden: boolean;
 	singleton: boolean;
 	read_only: boolean;
+	hide_create: boolean;
+	hide_edit: boolean;
+	hide_delete: boolean;
 	icon: string | null;
 	color: string | null;
 	translations: CollectionTranslations[] | null;
@@ -56,6 +59,9 @@ export type BaseCollectionMeta = Pick<
 	| 'hidden'
 	| 'singleton'
 	| 'read_only'
+	| 'hide_create'
+	| 'hide_edit'
+	| 'hide_delete'
 	| 'icon'
 	| 'translations'
 	| 'versioning'

@@ -13,6 +13,9 @@ export type CollectionMeta = {
 	hidden: boolean;
 	singleton: boolean;
 	read_only: boolean;
+	hide_create: boolean;
+	hide_edit: boolean;
+	hide_delete: boolean;
 	icon: string | null;
 	color: string | null;
 	translations: Translations[] | null;

@@ -127,7 +127,7 @@ async function getDatabaseSchema(database: Knex, schemaInspector: SchemaInspecto
 
 	const collections = [
 		...(await database
-			.select('collection', 'singleton', 'read_only', 'note', 'sort_field', 'name_field', 'kind', 'accountability')
+			.select('collection', 'singleton', 'read_only', 'hide_create', 'hide_edit', 'hide_delete', 'note', 'sort_field', 'name_field', 'kind', 'accountability')
 			.from('directus_collections')),
 		...systemCollectionRows,
 	];
@@ -157,6 +157,12 @@ async function getDatabaseSchema(database: Knex, schemaInspector: SchemaInspecto
 				collectionMeta?.singleton === true || collectionMeta?.singleton === 'true' || collectionMeta?.singleton === 1,
 			readOnly:
 				collectionMeta?.read_only === true || collectionMeta?.read_only === 'true' || collectionMeta?.read_only === 1,
+			hideCreate:
+				collectionMeta?.hide_create === true || collectionMeta?.hide_create === 'true' || collectionMeta?.hide_create === 1,
+			hideEdit:
+				collectionMeta?.hide_edit === true || collectionMeta?.hide_edit === 'true' || collectionMeta?.hide_edit === 1,
+			hideDelete:
+				collectionMeta?.hide_delete === true || collectionMeta?.hide_delete === 'true' || collectionMeta?.hide_delete === 1,
 			note: collectionMeta?.note || null,
 			sortField: collectionMeta?.sort_field || null,
 			nameField: collectionMeta?.name_field || null,

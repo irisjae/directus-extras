@@ -14,6 +14,9 @@ export type UsableCollection = {
 	rangeField: ComputedRef<string | null>;
 	isSingleton: ComputedRef<boolean>;
 	isReadonly: ComputedRef<boolean>;
+	isHideCreate: ComputedRef<boolean>;
+	isHideEdit: ComputedRef<boolean>;
+	isHideDelete: ComputedRef<boolean>;
 	accountabilityScope: ComputedRef<'all' | 'activity' | null>;
 };
 
@@ -80,11 +83,23 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value?.meta?.read_only === true;
 	});
 
+	const isHideCreate = computed(() => {
+		return info.value?.meta?.hide_create === true;
+	});
+
+	const isHideEdit = computed(() => {
+		return info.value?.meta?.hide_edit === true;
+	});
+
+	const isHideDelete = computed(() => {
+		return info.value?.meta?.hide_delete === true;
+	});
+
 	const accountabilityScope = computed(() => {
 		if (!info.value) return null;
 		if (!info.value.meta) return null;
 		return info.value.meta.accountability;
 	});
 
-	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, isSingleton, isReadonly, accountabilityScope };
+	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope };
 }
