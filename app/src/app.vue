@@ -29,7 +29,7 @@ useHead({
 	title: '',
 	titleTemplate: '%s · %projectName',
 	templateParams: {
-		projectName: computed(() => serverStore.info?.project?.project_name ?? 'Directus'),
+		projectName: computed(() => serverStore.info?.project?.project_name ?? ''),
 	},
 	meta: computed(() => {
 		const content = serverStore.info?.project?.project_color ?? '#6644ff';
