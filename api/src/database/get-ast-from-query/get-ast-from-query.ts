@@ -61,7 +61,11 @@ export async function getAstFromQuery(options: GetAstFromQueryOptions, context: 
 	delete options.query.fields;
 	delete options.query.deep;
 
-	options.query.sort ??= await getAllowedSort(options, context);
+	const metaList = (options.query as Record<string, any>)['meta'];
+	const virtual = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtual' in meta)?.[0]?.virtual;
+	if (!virtual) {
+		options.query.sort ??= await getAllowedSort(options, context);
+	}
 
 	// When no group by is supplied, but an aggregate function is used, only a single row will be
 	// returned. In those cases, we'll ignore the sort field altogether

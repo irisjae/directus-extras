@@ -83,7 +83,7 @@ export function usePivot(
 					params,
 				});
 
-				fetchedItems.value = response.data.data.filter((item) => item[pivotField] !== null).map((item) => {
+				let items = response.data.data.filter((item) => item[pivotField] !== null).map((item) => {
 					return {
 						pivotDisplay: pivotTemplate ?
 								pivotTemplate
@@ -101,15 +101,21 @@ export function usePivot(
 						pivot: pivotTemplate ? item[pivotField].id : item[pivotField],
 						... item
 					};
-				}).sort((a, b) => {
-					if (a.pivot > b.pivot) {
-						return +1;
-					} else if (a.pivot < b.pivot) {
-						return -1;
-					} else {
-						return 0;
-					}
 				});
+				
+				if (!virtualPivotField) {
+					items = items.sort((a, b) => {
+						if (a.pivot > b.pivot) {
+							return +1;
+						} else if (a.pivot < b.pivot) {
+							return -1;
+						} else {
+							return 0;
+						}
+					});
+				}
+				
+				fetchedItems.value = items;
 			} catch (error) {
 				unexpectedError(error);
 			} finally {

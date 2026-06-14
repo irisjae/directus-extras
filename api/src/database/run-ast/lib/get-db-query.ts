@@ -54,6 +54,23 @@ export function getDBQuery(
 			const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
 			const virtualTable = `"${table}${virtualKind || ''}"`;
 			flatQuery = knex.fromRaw(`${virtualTable}(${bindingTemplates}) as ${table}`, virtual);
+			
+			delete queryCopy.group;
+
+			const dbQuery = applyQuery(knex, table, flatQuery, queryCopy, schema, cases, permissions, {
+				aliasMap,
+			}).query;
+
+			flatQuery.select(fieldNodes.map((node) => preProcess(node)));
+
+			if (
+				helpers.capabilities.supportsDeduplicationOfParameters() &&
+				!helpers.capabilities.supportsColumnPositionInGroupBy()
+			) {
+				withPreprocessBindings(knex, dbQuery);
+			}
+
+			return dbQuery;
 		} else {
 			flatQuery = knex.from(table);
 		}
