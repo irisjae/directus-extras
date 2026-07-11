@@ -46,14 +46,16 @@ export function getDBQuery(
 	const metaList = (queryCopy as Record<string, any>)['meta'];
 	const virtual = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtual' in meta)?.[0]?.virtual;
 	const virtualKind = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtualKind' in meta)?.[0]?.virtualKind;
+	const virtualTable = metaList?.filter((meta: any) => typeof(meta) === 'object' && 'virtualTable' in meta)?.[0]?.virtualTable;
 
 	// Queries with aggregates and groupBy will not have duplicate result
 	if (queryCopy.aggregate || queryCopy.group) {
 		let flatQuery;
 		if (virtual) { 
 			const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
-			const virtualTable = `"${table}${virtualKind || ''}"`;
-			flatQuery = knex.fromRaw(`${virtualTable}(${bindingTemplates}) as ${table}`, virtual);
+
+			const virtualFunction = `"${table}${virtualKind || ''}"`;
+			flatQuery = knex.fromRaw(`${virtualFunction}(${bindingTemplates}) as ${table}`, virtual);
 			
 			delete queryCopy.group;
 
@@ -93,7 +95,7 @@ export function getDBQuery(
 			0,
 		);
 
-		// Map the group field to their respective select column positions (1 based, offset by the number of aggregate terms that are applied in applyQuery)
+		// MAP  the group field to their respective select column positions (1 based, offset by the number of aggregate terms that are applied in applyQuery)
 		// The positions need to be offset by the number of aggregate terms, since the aggregate terms are selected first
 		const groupColumnPositions = queryCopy.group?.map((field) => fieldNodeMap[field]![1] + 1 + aggregateCount) ?? [];
 
@@ -119,7 +121,13 @@ export function getDBQuery(
 	let dbQuery;
 	if (virtual) { 
 		const bindingTemplates = new Array(virtual!.length).fill('?').join(',');
-		dbQuery = knex.fromRaw(`${table}(${bindingTemplates})`, virtual);
+		if (virtualTable) {
+			const virtualTableHook = `"${table}${virtualKind || ''}:hook"`;
+			knex.fromRaw(`${virtualTableHook}(${bindingTemplates}) as ${table}`, virtual).then(() => {});
+		}
+
+		const virtualFunction = `"${table}${virtualKind || ''}"`;
+		dbQuery = knex.fromRaw(`${virtualFunction}(${bindingTemplates}) as ${table}`, virtual);
 	} else {
 		dbQuery = knex.from(table);
 	}

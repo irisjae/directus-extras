@@ -223,7 +223,8 @@ function sanitizeMeta(rawMeta: any) {
 		return rawMeta.map((meta) =>
 			typeof(meta) === 'object' ? ({
 				...(meta?.virtual ? { virtual: meta.virtual.map(sanitizeVirtualValue) } : {}),
-				...(meta?.virtualKind ? { virtualKind: meta.virtualKind } : {})
+				...(meta?.virtualKind ? { virtualKind: meta.virtualKind } : {}),
+				...(meta?.virtualTable ? { virtualTable: meta.virtualTable } : {})
 			}) : meta
 		);
 	}

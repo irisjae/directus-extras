@@ -38,6 +38,7 @@ export function useRelationMultiple(
 	itemId: Ref<string | number | null>,
 	pivotField?: string,
 	virtualTable?: boolean,
+	virtualTableKind?: string,
 	pivot?: Ref<any>,
 	filter?: Ref<Filter>,
 ) {
@@ -369,13 +370,23 @@ export function useRelationMultiple(
 		if (relation.value.sortField) fields.add(relation.value.sortField);
 
 		const filterOptions = virtualTable ? (
-			pivotField ? {
-				filter: { _and: [] },
-				meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
-			} : {
-				filter: { _and: [] },
-				meta: [{ virtual: [ itemId.value ] }]
-			}
+			virtualTableKind ? (
+				pivotField ? {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				} : {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				}
+			) : (
+				pivotField ? {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualTable: true }]
+				} : {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value ], virtualTable: true }]
+				}
+			)
 		) : (
 			pivotField ? { 
 				filter: {
@@ -479,13 +490,23 @@ export function useRelationMultiple(
 		}
 
 		const filterOptions = virtualTable ? (
-			pivotField ? {
-				filter: { _and: [] },
-				meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ] }]
-			} : {
-				filter: { _and: [] },
-				meta: [{ virtual: [ itemId.value ] }]
-			}
+			virtualTableKind ? (
+				pivotField ? {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				} : {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				}
+			) : (
+				pivotField ? {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualTable: true }]
+				} : {
+					filter: { _and: [] },
+					meta: [{ virtual: [ itemId.value ], virtualTable: true }]
+				}
+			)
 		) : (
 			pivotField ? { 
 				filter: {

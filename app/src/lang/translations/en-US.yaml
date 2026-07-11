@@ -929,6 +929,7 @@ layout_options: Layout Options
 rows: Rows
 null_text: Null Text
 virtual_table: Virtual Table
+virtual_table_kind: Virtual Table Kind
 pivot_field: Pivot Field
 pivot_field_template: Pivot Field Template
 pivot_placeholder: Empty Pivot Label

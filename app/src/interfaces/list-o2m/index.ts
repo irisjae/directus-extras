@@ -99,6 +99,19 @@ export default defineInterface({
 					width: 'full',
 				},
 			},
+			...(options.virtualTable ? [
+				{
+					field: 'virtualTableKind',
+					name: '$t:virtual_table_kind',
+					schema: {
+						default_value: null,
+					},
+					meta: {
+						interface: 'input',
+						width: 'full',
+					},
+				},
+			] : []),
 			{
 				field: 'fields',
 				name: '$t:columns',

@@ -25,7 +25,7 @@ const querySchema = Joi.object({
 	meta: Joi.array().items(
 		Joi.alternatives().try(
 			Joi.string().valid('total_count', 'filter_count'),
-			Joi.object({ virtual: Joi.array(), virtualKind: Joi.string().optional() })
+			Joi.object({ virtual: Joi.array(), virtualKind: Joi.string().optional(), virtualTable: Joi.boolean().optional() })
 		)
 	),
 	search: Joi.string(),
