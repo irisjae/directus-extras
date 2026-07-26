@@ -1,5 +1,6 @@
 import { useEnv } from '@directus/env';
 import type { Accountability, Filter, Item, Permission, Query, SchemaOverview } from '@directus/types';
+import { toArray } from '@directus/utils';
 import { cloneDeep, merge } from 'lodash-es';
 import { fetchPermissions } from '../../permissions/lib/fetch-permissions.js';
 import { fetchPolicies } from '../../permissions/lib/fetch-policies.js';
@@ -119,69 +120,82 @@ export async function runAst(
 		// Apply the `_in` filters to the nested collection batches
 		const nestedNodes = applyParentFilters(schema, nestedCollectionNodes, items);
 
-		for (const nestedNode of nestedNodes) {
-			let nestedItems: Item[] | null = [];
+		if (String(env['NO_NESTED_FIELDS']) !== '1') {
+			// NOW -- add virtual metas if applicable
+			for (const nestedNode of nestedNodes) {
+				let nestedItems: Item[] | null = [];
 
-			if (nestedNode.type === 'o2m') {
-				let hasMore = true;
+				if (nestedNode.type === 'o2m') {
+					let hasMore = true;
 
-				let batchCount = 0;
+					let batchCount = 0;
 
-				// If a nested node has a whenCase it indicates that the user might not be able to access the field for all items.
-				// In that case the queried item includes a flag under the fieldKey that is populated in the db and indicates
-				// if the user has access to that field for that specific item.
-				const hasWhenCase = nestedNode.whenCase && nestedNode.whenCase.length > 0;
-				let fieldAllowed: boolean | boolean[] = true;
+					// If a nested node has a whenCase it indicates that the user might not be able to access the field for all items.
+					// In that case the queried item includes a flag under the fieldKey that is populated in the db and indicates
+					// if the user has access to that field for that specific item.
+					const hasWhenCase = nestedNode.whenCase && nestedNode.whenCase.length > 0;
+					let fieldAllowed: boolean | boolean[] = true;
 
-				if (hasWhenCase) {
-					// Extract flag and remove field from item, so it can be populated with the actual items
-					if (Array.isArray(items)) {
-						fieldAllowed = [];
+					if (hasWhenCase) {
+						// Extract flag and remove field from item, so it can be populated with the actual items
+						if (Array.isArray(items)) {
+							fieldAllowed = [];
 
-						for (const item of items) {
-							fieldAllowed.push(!!item[nestedNode.fieldKey]);
-							delete item[nestedNode.fieldKey];
+							for (const item of items) {
+								fieldAllowed.push(!!item[nestedNode.fieldKey]);
+								delete item[nestedNode.fieldKey];
+							}
+						} else {
+							fieldAllowed = !!items[nestedNode.fieldKey];
+							delete items[nestedNode.fieldKey];
 						}
-					} else {
-						fieldAllowed = !!items[nestedNode.fieldKey];
-						delete items[nestedNode.fieldKey];
 					}
-				}
 
-				while (hasMore) {
+					while (hasMore) {
+						const node = merge({}, nestedNode, {
+							query: {
+								limit: env['RELATIONAL_BATCH_SIZE'],
+								offset: batchCount * (env['RELATIONAL_BATCH_SIZE'] as number),
+								page: null,
+							},
+						});
+
+						nestedItems = (await runAst(node, schema, accountability, { knex, nested: true })) as Item[] | null;
+
+						if (nestedItems) {
+							items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, fieldAllowed)!;
+						}
+
+						if (!nestedItems || nestedItems.length < (env['RELATIONAL_BATCH_SIZE'] as number)) {
+							hasMore = false;
+						}
+						if (nestedNode.type === 'o2m' &&
+							toArray(items).every((parentItem) => {
+								const parentItems = parentItem[nestedNode.fieldKey];
+								return parentItems && 
+									parentItems.length >= Number(env['QUERY_LIMIT_DEFAULT']);
+							})
+						) {
+							hasMore = false;
+						}
+
+						batchCount++;
+					}
+				} else {
 					const node = merge({}, nestedNode, {
-						query: {
-							limit: env['RELATIONAL_BATCH_SIZE'],
-							offset: batchCount * (env['RELATIONAL_BATCH_SIZE'] as number),
-							page: null,
-						},
+						query: { limit: -1 },
 					});
 
 					nestedItems = (await runAst(node, schema, accountability, { knex, nested: true })) as Item[] | null;
 
 					if (nestedItems) {
-						items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, fieldAllowed)!;
+						// Merge all fetched nested records with the parent items
+						items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, true)!;
 					}
-
-					if (!nestedItems || nestedItems.length < (env['RELATIONAL_BATCH_SIZE'] as number)) {
-						hasMore = false;
-					}
-
-					batchCount++;
-				}
-			} else {
-				const node = merge({}, nestedNode, {
-					query: { limit: -1 },
-				});
-
-				nestedItems = (await runAst(node, schema, accountability, { knex, nested: true })) as Item[] | null;
-
-				if (nestedItems) {
-					// Merge all fetched nested records with the parent items
-					items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, true)!;
 				}
 			}
 		}
+
 
 		// During the fetching of data, we have to inject a couple of required fields for the child nesting
 		// to work (primary / foreign keys) even if they're not explicitly requested. After all fetching
