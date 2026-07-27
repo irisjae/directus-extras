@@ -121,8 +121,9 @@ export async function runAst(
 		const nestedNodes = applyParentFilters(schema, nestedCollectionNodes, items);
 
 		if (String(env['NO_NESTED_FIELDS']) !== '1') {
+			const itemsCopy: Item | Item[] = items;
 			// NOW -- add virtual metas if applicable
-			for (const nestedNode of nestedNodes) {
+			await Promise.all(nestedNodes.map(async (nestedNode) => {
 				let nestedItems: Item[] | null = [];
 
 				if (nestedNode.type === 'o2m') {
@@ -138,24 +139,26 @@ export async function runAst(
 
 					if (hasWhenCase) {
 						// Extract flag and remove field from item, so it can be populated with the actual items
-						if (Array.isArray(items)) {
+						if (Array.isArray(itemsCopy)) {
 							fieldAllowed = [];
 
-							for (const item of items) {
+							for (const item of itemsCopy) {
 								fieldAllowed.push(!!item[nestedNode.fieldKey]);
 								delete item[nestedNode.fieldKey];
 							}
 						} else {
-							fieldAllowed = !!items[nestedNode.fieldKey];
-							delete items[nestedNode.fieldKey];
+							fieldAllowed = !!itemsCopy[nestedNode.fieldKey];
+							delete itemsCopy[nestedNode.fieldKey];
 						}
 					}
 
 					while (hasMore) {
+						const size = Math.min(Number(env['RELATIONAL_BATCH_SIZE']), Number(env['QUERY_LIMIT_DEFAULT']));
+						
 						const node = merge({}, nestedNode, {
 							query: {
-								limit: env['RELATIONAL_BATCH_SIZE'],
-								offset: batchCount * (env['RELATIONAL_BATCH_SIZE'] as number),
+								limit: size,
+								offset: batchCount * size,
 								page: null,
 							},
 						});
@@ -163,14 +166,14 @@ export async function runAst(
 						nestedItems = (await runAst(node, schema, accountability, { knex, nested: true })) as Item[] | null;
 
 						if (nestedItems) {
-							items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, fieldAllowed)!;
+							mergeWithParentItems(schema, nestedItems, itemsCopy!, nestedNode, fieldAllowed)!;
 						}
 
-						if (!nestedItems || nestedItems.length < (env['RELATIONAL_BATCH_SIZE'] as number)) {
+						if (!nestedItems || nestedItems.length < size) {
 							hasMore = false;
 						}
 						if (nestedNode.type === 'o2m' &&
-							toArray(items).every((parentItem) => {
+							toArray(itemsCopy).every((parentItem) => {
 								const parentItems = parentItem[nestedNode.fieldKey];
 								return parentItems && 
 									parentItems.length >= Number(env['QUERY_LIMIT_DEFAULT']);
@@ -190,10 +193,10 @@ export async function runAst(
 
 					if (nestedItems) {
 						// Merge all fetched nested records with the parent items
-						items = mergeWithParentItems(schema, nestedItems, items!, nestedNode, true)!;
+						mergeWithParentItems(schema, nestedItems, itemsCopy!, nestedNode, true)!;
 					}
 				}
-			}
+			}));
 		}
 
 
