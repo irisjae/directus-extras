@@ -1,5 +1,5 @@
 import { useEnv } from '@directus/env';
-import type { Accountability, Filter, Item, Permission, Query, SchemaOverview } from '@directus/types';
+import type { Accountability, Filter, FieldFilter, Item, Permission, Query, SchemaOverview } from '@directus/types';
 import { toArray } from '@directus/utils';
 import { cloneDeep, merge } from 'lodash-es';
 import { fetchPermissions } from '../../permissions/lib/fetch-permissions.js';
@@ -120,8 +120,11 @@ export async function runAst(
 		// Apply the `_in` filters to the nested collection batches
 		const nestedNodes = applyParentFilters(schema, nestedCollectionNodes, items);
 
-		if (String(env['NO_NESTED_FIELDS']) !== '1') {
+		if (nestedNodes.length !== 0) {
 			const itemsCopy: Item | Item[] = items;
+			const queryLimit = ('_eq' in ((query.filter as FieldFilter)?.['id'] ?? {})) ? 1 : Number(env['QUERY_LIMIT_DEFAULT'] ?? 20);
+			const queryBatchSize = Number(env['RELATIONAL_BATCH_SIZE'] ?? 50);
+
 			// NOW -- add virtual metas if applicable
 			await Promise.all(nestedNodes.map(async (nestedNode) => {
 				let nestedItems: Item[] | null = [];
@@ -153,8 +156,8 @@ export async function runAst(
 					}
 
 					while (hasMore) {
-						const size = Math.min(Number(env['RELATIONAL_BATCH_SIZE']), Number(env['QUERY_LIMIT_DEFAULT']));
-						
+						const size = Math.min(queryLimit, queryBatchSize);
+
 						const node = merge({}, nestedNode, {
 							query: {
 								limit: size,
@@ -176,7 +179,7 @@ export async function runAst(
 							toArray(itemsCopy).every((parentItem) => {
 								const parentItems = parentItem[nestedNode.fieldKey];
 								return parentItems && 
-									parentItems.length >= Number(env['QUERY_LIMIT_DEFAULT']);
+									parentItems.length >= queryLimit;
 							})
 						) {
 							hasMore = false;
@@ -198,7 +201,6 @@ export async function runAst(
 				}
 			}));
 		}
-
 
 		// During the fetching of data, we have to inject a couple of required fields for the child nesting
 		// to work (primary / foreign keys) even if they're not explicitly requested. After all fetching
