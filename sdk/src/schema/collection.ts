@@ -27,6 +27,7 @@ export type DirectusCollection<Schema = any> = {
 			accountability: string | null;
 			color: string | null;
 			item_duplication_fields: string[] | null;
+			filter: object | null;
 			sort: number | null;
 			group: string | null;
 			collapse: string;

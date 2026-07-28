@@ -1,4 +1,4 @@
-import type { CollectionsOverview } from '@directus/types';
+import type { CollectionsOverview, Filter } from '@directus/types';
 import { parseJSON } from '@directus/utils';
 import type { Knex } from 'knex';
 
@@ -16,6 +16,7 @@ export function getCollectionMetaUpdates(
 		range_field?: null | string;
 		kind?: null | string;
 		item_duplication_fields?: null | string | string[];
+		filter?: null | Filter;
 		collection: string;
 	}[],
 	collections: CollectionsOverview,

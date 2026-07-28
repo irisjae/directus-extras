@@ -21,6 +21,7 @@ describe('getVersionedHash', () => {
 					hidden: false,
 					icon: null,
 					item_duplication_fields: null,
+					filter: null,
 					note: null,
 					singleton: false,
 					sort: null,

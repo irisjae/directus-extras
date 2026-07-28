@@ -46,7 +46,7 @@ const { collection } = toRefs(props);
 const bookmarkID = computed(() => (props.bookmark ? +props.bookmark : null));
 
 const { selection } = useSelection();
-const { info: currentCollection, isReadonly, isHideCreate, isHideEdit, isHideDelete, rangeField } = useCollection(collection);
+const { info: currentCollection, isReadonly, isHideCreate, isHideEdit, isHideDelete, rangeField, filter: collectionFilter } = useCollection(collection);
 const { addNewLink, currentCollectionLink } = useLinks();
 const { breadcrumb } = useBreadcrumb();
 
@@ -188,21 +188,22 @@ const archiveFilter = computed<Filter | null>(() => {
 	}
 });
 const systemFilter = computed<Filter | null>(() => {
-	const filter = archiveFilter.value;
+	const filter = collectionFilter.value;
+	const archiveFilterValue = archiveFilter.value;
 	const rangeFilter = (
 		(rangeFieldInfo.value && rangeStart.value !== null && rangeEnd.value !== null) ? {
 			[rangeField.value]: { _between: [ rangeStart.value, rangeEnd.value ] }
 		} : null
 	);
 
-	if (filter === null) {
-		return rangeFilter;
-	} else if (rangeFilter === null) {
-		return filter;
+	const filters = [ filter, archiveFilterValue, rangeFilter ].filter(filter => filter !== null);
+
+	if (filters.length === 0) {
+		return null;
+	} else if (filters.length === 1) {
+		return filters[0];
 	} else {
-		return {
-			_and: [ filter, rangeFilter ]
-		};
+		return { _and: filters };
 	}
 });
 

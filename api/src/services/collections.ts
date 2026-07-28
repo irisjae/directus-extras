@@ -703,7 +703,7 @@ export class CollectionsService {
 					// only process duplication fields if related collections have them
 					if (collectionRelationList.size !== 0) {
 						const collectionMetas = await trx
-							.select('collection', 'read_only', 'hide_create', 'hide_edit', 'hide_delete', 'archive_field', 'sort_field', 'name_field', 'range_field', 'kind', 'item_duplication_fields')
+							.select('collection', 'read_only', 'hide_create', 'hide_edit', 'hide_delete', 'archive_field', 'sort_field', 'name_field', 'range_field', 'kind', 'item_duplication_fields', 'filter')
 							.from('directus_collections')
 							.whereIn('collection', Array.from(collectionRelationList))
 							.whereNotNull('item_duplication_fields');

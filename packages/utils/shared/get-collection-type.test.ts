@@ -29,6 +29,7 @@ const AliasCollection: Collection = {
 		unarchive_value: null,
 		archive_app_filter: true,
 		item_duplication_fields: null,
+		filter: null,
 		accountability: null,
 		sort: null,
 		group: null,

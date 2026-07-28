@@ -1,4 +1,4 @@
-import type { AppCollection, Field } from '@directus/types';
+import type { AppCollection, Field, Filter } from '@directus/types';
 import type { ComputedRef, Ref } from 'vue';
 import { computed, ref } from 'vue';
 import { useStores } from './use-system.js';
@@ -12,6 +12,7 @@ export type UsableCollection = {
 	sortField: ComputedRef<string | null>;
 	nameField: ComputedRef<string | null>;
 	rangeField: ComputedRef<string | null>;
+	filter: ComputedRef<Filter | null>;
 	isHidden: ComputedRef<boolean>;
 	isSingleton: ComputedRef<boolean>;
 	isReadonly: ComputedRef<boolean>;
@@ -76,6 +77,10 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value?.meta?.range_field || null;
 	});
 
+	const filter = computed(() => {
+		return info.value?.meta?.filter || null;
+	});
+
 	const isHidden = computed(() => {
 		return info.value?.meta?.hidden === true;
 	});
@@ -106,5 +111,5 @@ export function useCollection(collectionKey: string | Ref<string | null>): Usabl
 		return info.value.meta.accountability;
 	});
 
-	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, isHidden, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope };
+	return { info, fields, defaults, primaryKeyField, userCreatedField, sortField, nameField, rangeField, filter, isHidden, isSingleton, isReadonly, isHideCreate, isHideEdit, isHideDelete, accountabilityScope };
 }

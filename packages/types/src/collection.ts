@@ -1,4 +1,5 @@
 import type { Table } from '@directus/schema';
+import type { Filter } from './filter.ts';
 
 type Translations = {
 	language: string;
@@ -30,6 +31,7 @@ export type CollectionMeta = {
 	unarchive_value: string | null;
 	archive_app_filter: boolean;
 	item_duplication_fields: string[] | null;
+	filter: Filter | null;
 	accountability: 'all' | 'activity' | null;
 	system: boolean | null;
 	sort: number | null;

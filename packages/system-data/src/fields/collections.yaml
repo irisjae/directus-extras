@@ -109,6 +109,13 @@ fields:
       label: $t:hide_delete_label
     width: half
 
+  - field: filter
+    special:
+      - cast-json
+    interface: system-filter
+    options:
+      collectionField: collection
+
   # WIP
   - field: kind
     interface: input
