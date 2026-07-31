@@ -11,6 +11,7 @@ import { pushGroupOptionsDown } from '@/utils/push-group-options-down';
 import { translate } from '@/utils/translate-object-values';
 import { unexpectedError } from '@/utils/unexpected-error';
 import { validateItem } from '@/utils/validate-item';
+import { parseFilter } from '@/utils/parse-filter';
 import { useCollection } from '@directus/composables';
 import { isSystemCollection } from '@directus/system-data';
 import { Alterations, Field, Item, PrimaryKey, Query, Relation } from '@directus/types';
@@ -51,7 +52,7 @@ export function useItem<T extends Item>(
 	primaryKey: Ref<PrimaryKey | null>,
 	query: MaybeRef<Query> = {},
 ): UsableItem<T> {
-	const { info: collectionInfo, primaryKeyField } = useCollection(collection);
+	const { info: collectionInfo, primaryKeyField, filter } = useCollection(collection);
 	const item: Ref<T | null> = ref(null);
 	const error = ref<any>(null);
 	const validationErrors = ref<any[]>([]);
@@ -86,6 +87,15 @@ export function useItem<T extends Item>(
 		}
 
 		return `${getEndpoint(collection.value)}/${encodeURIComponent(primaryKey.value as string)}`;
+	});
+	const itemParams = computed(() => {
+		if (isSingle.value) {
+			if (!!collectionInfo.value?.meta?.filter) {
+				return { filter: parseFilter(collectionInfo.value!.meta!.filter) };
+			}
+		}
+	
+		return {};
 	});
 
 	const defaultValues = getDefaultValuesFromFields(fieldsWithPermissions);
@@ -125,7 +135,7 @@ export function useItem<T extends Item>(
 		error.value = null;
 
 		try {
-			const response = await api.get(itemEndpoint.value, { params: unref(query) });
+			const response = await api.get(itemEndpoint.value, { params: { ...(unref(query) ?? {}), ...itemParams.value } });
 			setItemValueToResponse(response);
 		} catch (err) {
 			error.value = err;
@@ -178,7 +188,7 @@ export function useItem<T extends Item>(
 					title: i18n.global.t('item_create_success', 1),
 				});
 			} else {
-				response = await api.patch(itemEndpoint.value, edits.value);
+				response = await api.patch(itemEndpoint.value, { ...edits.value, ...itemParams.value });
 
 				notify({
 					title: i18n.global.t('item_update_success', 1),
@@ -450,6 +460,7 @@ export function useItem<T extends Item>(
 
 			await api.patch(itemEndpoint.value, {
 				[field]: value,
+				...itemParams.value
 			});
 
 			item.value = {
@@ -473,7 +484,7 @@ export function useItem<T extends Item>(
 		deleting.value = true;
 
 		try {
-			await api.delete(itemEndpoint.value);
+			await api.delete(itemEndpoint.value, itemParams.value);
 
 			item.value = null;
 
