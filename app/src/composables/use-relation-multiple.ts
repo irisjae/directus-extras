@@ -40,6 +40,7 @@ export function useRelationMultiple(
 	virtualTable?: boolean,
 	virtualTableKind?: string,
 	pivot?: Ref<any>,
+	virtualPivot?: boolean,
 	filter?: Ref<Filter>,
 ) {
 	filter = toRef(filter);
@@ -371,17 +372,23 @@ export function useRelationMultiple(
 
 		const filterOptions = virtualTable ? (
 			virtualTableKind ? (
-				pivotField ? {
+				pivotField && virtualPivot ? {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				} : pivotField && !virtualPivot ? {
+					filter: { _and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] },
+					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
 				} : {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
 				}
 			) : (
-				pivotField ? {
+				pivotField && virtualPivot ? {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualTable: true }]
+				} : pivotField && !virtualPivot ? {
+					filter: { _and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] },
+					meta: [{ virtual: [ itemId.value ], virtualTable: true }]
 				} : {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value ], virtualTable: true }]
@@ -491,17 +498,23 @@ export function useRelationMultiple(
 
 		const filterOptions = virtualTable ? (
 			virtualTableKind ? (
-				pivotField ? {
+				pivotField && virtualPivot ? {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
+				} : pivotField && !virtualPivot ? {
+					filter: { _and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] },
+					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
 				} : {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value ], virtualKind: ';' + virtualTableKind, virtualTable: true }]
 				}
 			) : (
-				pivotField ? {
+				pivotField && virtualPivot ? {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value, pivot.value ?? { _null: true } ], virtualTable: true }]
+				} : pivotField && !virtualPivot ? {
+					filter: { _and: [{ [reverseJunctionField]: itemId.value }, { [pivotField]: pivot.value ?? { _null: true } }] },
+					meta: [{ virtual: [ itemId.value ], virtualTable: true }]
 				} : {
 					filter: { _and: [] },
 					meta: [{ virtual: [ itemId.value ], virtualTable: true }]

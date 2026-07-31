@@ -267,7 +267,7 @@ const {
 	isItemSelected,
 	isLocalItem,
 	getItemEdits,
-} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, props.virtualTableKind, pivot, fieldsFilter);
+} = useRelationMultiple(value, query, relationInfo, primaryKey, props.pivotField, props.virtualTable, props.virtualTableKind, pivot, props.virtualPivotField, fieldsFilter);
 
 const { createAllowed, updateAllowed, deleteAllowed, selectAllowed } = useRelationPermissionsM2M(relationInfo);
 
