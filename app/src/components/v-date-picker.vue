@@ -30,7 +30,15 @@ let flatpickr: Flatpickr.Instance | null;
 onMounted(async () => {
 	if (wrapper.value) {
 		const flatpickrLocale = getFlatpickrLocale();
-		flatpickr = Flatpickr(wrapper.value as Node, { ...flatpickrOptions.value, locale: flatpickrLocale } as any);
+		flatpickr = Flatpickr(
+			wrapper.value as Node,
+			{
+				...flatpickrOptions.value,
+				defaultHour: 0,
+				defaultMinute: 0,
+				locale: flatpickrLocale
+			} as any
+		);
 	}
 
 	watch(
